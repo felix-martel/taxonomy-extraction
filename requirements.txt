@@ -26,5 +26,5 @@ tabulate==0.8.2
 tqdm==4.28.1
 typing==3.6.4
 urllib3==1.22
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 Wikidata==0.6.1
