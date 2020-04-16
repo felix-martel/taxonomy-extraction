@@ -27,13 +27,16 @@ EdgeList = List[Edge]
 PlotParams = Union[None, Dict[str, Any]]
 
 
-def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2, max_depth: Union[float, int] = float("inf"),
+def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2, max_depth: Union[float, int, None] = None,
                max_width: Union[None, int] = None) -> Tuple[CoordDict, EdgeList]:
     """
     Find coordinates of each nodes in the tree
     """
     coords = dict()
     edges: EdgeList = []
+    if max_depth is None:
+        max_depth = float("inf")
+
     def rec_get_coords(node: Node, offset: float = 0.) -> Tuple[float, float, float, float]:
         dx = step_x / 2**node.depth
         y = node.depth * step_y
@@ -63,7 +66,7 @@ def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2, max_depth: 
     return {node: (x, y) for node, (x, y, *_) in coords.items()}, edges
 
 
-def plot_tree(coords: CoordDict, edges: Edge, labels=None, filename: Union[None, str] = None,
+def plot_tree(coords: CoordDict, edges: EdgeList, labels=None, filename: Union[None, str] = None,
               edge_params: PlotParams = None, node_params: PlotParams = None, label_params: PlotParams = None) -> None:
     """
     Plot a tree from a list of coordinates and edges.
