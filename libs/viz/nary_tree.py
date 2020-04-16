@@ -17,17 +17,17 @@ plot_tree(coords, edges, labels="name")
 """
 import matplotlib.pyplot as plt
 from libs.utils.misc import namer
-from typing import Dict, Tuple, Any, List, Union
-from libs.tree import Node
+from typing import Dict, Tuple, Any, List, Union, TypeVar
 
 
+Node = TypeVar("Node")
 CoordDict = Dict[Node, Tuple[float, float]]
 Edge = Tuple[Tuple[float, float], Tuple[float, float]]
 EdgeList = List[Edge]
 PlotParams = Union[None, Dict[str, Any]]
 
 
-def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2, max_depth: Union[float, int, None] = None,
+def get_coords(tree, step_x: float = 1., step_y: float = -0.2, max_depth: Union[float, int, None] = None,
                max_width: Union[None, int] = None) -> Tuple[CoordDict, EdgeList]:
     """
     Find coordinates of each nodes in the tree

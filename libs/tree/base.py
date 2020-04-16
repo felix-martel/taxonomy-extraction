@@ -15,6 +15,7 @@ from collections import deque
 from contextlib import redirect_stdout
 from io import StringIO
 
+import libs.viz.nary_tree as treeplot
 from libs.tree.pprint import print_tree
 
 INF = float("inf")
@@ -343,6 +344,15 @@ class Node:
         Define a custom printing function for the node. See method `Node.print` for the other parameters.
         """
         self.print(start, max_depth, nameattr=func, **kwargs)
+
+    def plot(self, max_depth: Union[None, int] = 4, max_width : Union[None, int] = 7, custom_label=None, **params):
+        """
+        Plot a tree using matplotlib and `libs.viz.nary_tree` module
+        """
+        if custom_label is None:
+            custom_label = "name"
+        coords, edges = treeplot.get_coords(self, max_depth=max_depth, max_width=max_width)
+        treeplot.plot_tree(coords, edges, labels=custom_label, **params)
 
 
 a = Node.from_edges([("f", "c"), ("e", "b"), ("d", "b")], add_root="a")
