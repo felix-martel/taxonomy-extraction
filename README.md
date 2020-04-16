@@ -1,6 +1,13 @@
 # taxonomy-extraction
 Code for automatically extracting expressive and non-expressive taxonomies from knowledge graphs (research project at the [Lama-West lab](http://labowest.ca/?clang=en), Polytechnique Montréal, Canada).
 
+![Overview of the taxonomy extraction method](https://github.com/felix-martel/taxonomy-extraction/raw/master/data/img/summary.png)
+
+Starting from a knowledge graph KG and a set of entity-type pairs, (1) entities are embedded into a *d*-dimensional vector space (2) then they’re hierarchically clustered; (3) each type in the original dataset is then mapped to one of the cluster, (4) the taxonomy is extracted by removing non-selected clusters.
+
+For expressive taxonomy extraction, the algorithm starts from an axiom *A*, sample *n* entities verifying this axiom, and run a hierarchical clustering over them. The clusters are then labelled by expressive axioms using statistics on linked data, and a taxonomic tree *T(A)* is extracted. Then, *T(A)* is iteratively expanded by sampling new entities from the axioms in *T(A)* and adding the extracted subtrees to *T(A)*. 
+
+
 The core code is contained in `libs`:
 - `libs.graph`: load and query knowledge graphs.
 - `libs.dataset`: create datasets for the taxonomy extraction task, or load existing datasets from file.
