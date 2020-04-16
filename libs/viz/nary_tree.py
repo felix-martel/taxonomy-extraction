@@ -27,35 +27,37 @@ EdgeList = List[Edge]
 PlotParams = Union[None, Dict[str, Any]]
 
 
-def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2) -> Tuple[CoordDict, EdgeList]:
+def get_coords(tree: Node, step_x: float = 1., step_y: float = -0.2, max_depth: Union[float, int] = float("inf"),
+               max_width: Union[None, int] = None) -> Tuple[CoordDict, EdgeList]:
     """
     Find coordinates of each nodes in the tree
     """
     coords = dict()
     edges: EdgeList = []
-
     def rec_get_coords(node: Node, offset: float = 0.) -> Tuple[float, float, float, float]:
         dx = step_x / 2**node.depth
         y = node.depth * step_y
-        if node.is_leaf:
+        if node.is_leaf or node.depth >= max_depth:
             mi = offset
             x = offset + dx / 2
             ma = offset + dx
         else:
-            xs, ys = [], []
             mi = offset
             offset = mi
             ma = None
-            for child in node.children:
+            child_coords = []
+
+            for child in node.children[:max_width]:
+                # Recursively compute the coordinates of its children
                 xc, yc, mic, mac = rec_get_coords(child, offset=offset)
-                xs.append(xc)
+                child_coords.append((xc, yc))
                 offset = mac
                 ma = mac
             x = (ma + mi) / 2
+
+            # Update edge list
+            edges.extend(((x, xb), (y, yb)) for xb, yb in child_coords)
         coords[node] = (x, y, mi, ma)
-        for child in node.children:
-            (xa, ya, *_), (xb, yb, *_) = coords[child], coords[node]
-            edges.append(((xa, xb), (ya, yb)))
         return x, y, mi, ma
     rec_get_coords(tree)
     return {node: (x, y) for node, (x, y, *_) in coords.items()}, edges
