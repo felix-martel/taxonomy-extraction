@@ -8,6 +8,8 @@ from itertools import chain
 from collections import Counter
 
 
+#TODO: `Taxonomy` should inherit from `libs.tree.Node`
+
 class TaxonomyItem:
     def __init__(self, class_name, parent=None, selected=True):
         self.name = class_name

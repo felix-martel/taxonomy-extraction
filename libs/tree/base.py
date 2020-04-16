@@ -6,8 +6,10 @@ Basic tree ideas: a Node is identified to its subtree, that is a Tree can be:
 
 # TODO: add an 'export as HTML' feature
 # TODO: add a 'plot with Plotly' feature
+# TODO: add static creation methods 'from_tree', 'from_revtree', + dump/load methods
+# TODO: add the notion of *tree compression* (subtree containing only selected nodes)
 """
-from typing import List, Union, Dict, Tuple, NewType, Iterable, Callable, Generator
+from typing import List, Union, Dict, Tuple, NewType, Iterable, Callable, Generator, TextIO
 
 from collections import deque
 from contextlib import redirect_stdout
@@ -74,6 +76,14 @@ class Node:
         for name in names:
             self.remove(name)
 
+    def siblings(self) -> List["Node"]:
+        """
+        Return the siblings of the node (i.e all other nodes that have the same parent)
+        """
+        if self.is_root:
+            return []
+        return [node for node in self.parent.children if node != self]
+
     def to_edges(self) -> List[Tuple[NodeId, NodeId]]:
         """
         Return a list of `(child, parent)` tuples, each one representing an edge in the tree
@@ -99,7 +109,7 @@ class Node:
             roots = {add_root}
         root = roots.pop()
         tree = cls(root)
-        node_dict = {node: Node(node) for node in nodes}
+        node_dict = {node: cls(node) for node in nodes}
         node_dict[root] = tree
 
         for child, parent in edges:
@@ -107,6 +117,29 @@ class Node:
             child.attach(parent)
         tree.rebuild_depths()
         return tree
+
+    @classmethod
+    def read_edge_list(cls, file: TextIO) -> List[Tuple[str, str]]:
+        edges = []
+        for line in file:
+            child, parent = line.split()
+            edges.append((child, parent))
+        return edges
+
+    @classmethod
+    def write_edge_list(cls, edges: Iterable[Tuple[str, str]], file: TextIO):
+        for edge in edges:
+            print(*edge, file=file)
+
+    @classmethod
+    def from_file(cls, filename: str, add_root: Union[bool, str, NodeId] = False) -> "Node":
+        with open(filename, "r", encoding="utf8") as f:
+            edges = cls.read_edge_list(f)
+        return cls.from_edges(edges, add_root=add_root)
+
+    def to_file(self, filename: str):
+        with open(filename, "w", encoding="utf8") as f:
+            self.write_edge_list(self.to_edges(), f)
 
     @property
     def is_root(self) -> bool:
