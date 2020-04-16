@@ -104,6 +104,12 @@ class Axiom:
 
 
 class AtomicAxiom(Axiom, ABC):
+    """
+    Abstract class for atomic axioms.
+
+    Atomic axioms (*atoms* in short) are the basic axiom building blocks: concepts (such as `dbo:Person` or
+    `dbo:Place`), existential restrictions ∃R.C, value properties ∃R.{v}, datatype properties, or special axioms like ⊤.
+    """
     def __init__(self, name: str, vec: Union[None, np.ndarray] = None) -> None:
         super().__init__(name, vec)
 
@@ -112,6 +118,14 @@ class AtomicAxiom(Axiom, ABC):
 
 
 class Concept(AtomicAxiom):
+    """
+    Represent a Concept.
+
+    A concept is the simplest axiom pattern. A concept `C` holds for an entity `x` if the triple `(x, rdf:type, C)`
+    exists in the knowledge graph. We also add a special `Concept` element, named `TopAxiom`, for axiom ⊤.
+    Another special case of concept is *singleton concept* {v}. Singleton concepts contain only one elements, and
+    they're mostly useful to represent value properties ∃R.{v}.
+    """
     rel = str(Rel.IS_A)
 
     def __init__(self, concept=None, singleton=None):
@@ -156,6 +170,13 @@ TopAxiom.is_top = True
 
 
 class Existential(AtomicAxiom):
+    """
+    Represent an existential restriction.
+
+    An existential restriction  `∃R.C` is defined by a relation `R` and a concept `C`. It holds for entity `x` if
+    `x` is linked to another entity `y` by the relation `R`, with `y` belonging to concept `C`:
+    $$x \in \exists R.C \iff \exists y \in \mathcal{E}, (x, R, y) \in \Delta \land C(y)$$
+    """
     def __init__(self, rel: str, concept: Union[None, Concept], vec=None) -> None:
         if concept is None:
             concept = TopAxiom
@@ -171,6 +192,10 @@ class Existential(AtomicAxiom):
 
 
 class EmptyAxiom(Axiom):
+    """
+    Represent an unitialized axiom. Used for the axiom improvement algorithm, when the list of candidate axioms
+    hasn't been initialized.
+    """
     def __init__(self):
         super().__init__("__empty__", vec=None)
 
@@ -192,6 +217,12 @@ class EmptyAxiom(Axiom):
 
 
 class NaryAxiom(Axiom):
+    """
+    Represent a N-ary axiom, that is the combination of N axioms by a N-ary operator.
+    A `NaryAxiom` is defined by an operator `op` with arity $N$ (*e.g* NEG with arity 1, AND, OR with arity 2), and
+    $N$ axioms $\alpha_1, \alpha_2, \ldots \alpha_N$. Then, the NaryAxiom is simply:
+    $$\alpha_\text{n-ary} = op(\alpha_1, \ldots, \alpha_k)$$
+    """
     def __init__(self, op: AxiomOp, *axioms: Axiom):
         axioms = list(axioms)
         if len(axioms) != op.arity:
