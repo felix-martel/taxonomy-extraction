@@ -92,7 +92,7 @@ class Node:
         return edges
 
     @classmethod
-    def from_edges(cls, edges: List[Tuple[str, str]], add_root: Union[bool, str, NodeId] = False) -> "Node":
+    def from_edges(cls, edges: List[Tuple[str, str]], add_root: Union[bool, str, NodeId] = False, **init_params) -> "Node":
         """
         Build a tree from a list of `(child, parent)` tuples, each one representing an edge in the tree
         """
@@ -108,8 +108,8 @@ class Node:
                 edges.append((root, add_root))
             roots = {add_root}
         root = roots.pop()
-        tree = cls(root)
-        node_dict = {node: cls(node) for node in nodes}
+        tree = cls(root, **init_params)
+        node_dict = {node: cls(node, **init_params) for node in nodes}
         node_dict[root] = tree
 
         for child, parent in edges:
@@ -117,6 +117,8 @@ class Node:
             child.attach(parent)
         tree.rebuild_depths()
         return tree
+
+
 
     @classmethod
     def read_edge_list(cls, file: TextIO) -> List[Tuple[str, str]]:
@@ -352,6 +354,14 @@ class Node:
             custom_label = "name"
         coords, edges = treeplot.get_coords(self, max_depth=max_depth, max_width=max_width)
         treeplot.plot_tree(coords, edges, labels=custom_label, **params)
+
+    def _build_at_depth(self) -> Dict[int, List["Node"]]:
+        at_depth = dict()
+        for node in self:
+            if node.depth not in at_depth:
+                at_depth[node.depth] = list()
+            at_depth[node.depth].append(node)
+        return at_depth
 
 
 a = Node.from_edges([("f", "c"), ("e", "b"), ("d", "b")], add_root="a")
