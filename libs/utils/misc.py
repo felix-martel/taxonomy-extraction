@@ -5,6 +5,11 @@ from typing import Callable, Dict, TypeVar
 T = TypeVar("T")
 
 
+def safe_divide(p, q):
+    if q == 0: return 0.0
+    return p / q
+
+
 @singledispatch
 def namer(p) -> Callable[[T], str]:
     """
