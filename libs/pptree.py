@@ -1,3 +1,7 @@
+from warnings import warn
+
+warn("'libs.pptree' is deprecated. Use 'libs.tree.pprint' instead", category=DeprecationWarning)
+
 class Node:
     def __init__(self, name, parent=None):
         self.name = name

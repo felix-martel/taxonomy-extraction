@@ -1,3 +1,9 @@
+from warnings import warn
+
+
+warn("Module axiom.py is deprecated. Use 'libs.taxonomy.evaluation' instead.", category=DeprecationWarning)
+
+
 def pprint(axiom):
     c1, c2 = axiom
     print("{} ⊑ {}".format(c1, c2))

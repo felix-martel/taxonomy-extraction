@@ -2,6 +2,8 @@
 DEPRECATED
 """
 from collections import defaultdict
+from warnings import warn
+
 from libs.axiom import transitive_closure
 from libs.dataset import Dataset
 from libs.pptree import print_tree
@@ -11,6 +13,7 @@ from itertools import chain
 from collections import Counter
 
 
+warn("'libs.taxo' is deprecated. Use module 'libs.taxonomy' instead", category=DeprecationWarning)
 #TODO: `Taxonomy` should inherit from `libs.tree.Node`
 
 class TaxonomyItem:
