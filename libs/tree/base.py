@@ -10,7 +10,6 @@ Basic tree ideas: a Node is identified to its subtree, that is a Tree can be:
 # TODO: add the notion of *tree compression* (subtree containing only selected nodes)
 """
 from typing import List, Union, Dict, Tuple, NewType, Iterable, Callable, Generator, TextIO
-
 from collections import deque
 from contextlib import redirect_stdout
 from io import StringIO
