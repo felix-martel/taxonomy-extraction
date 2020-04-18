@@ -12,6 +12,8 @@ import warnings
 import random
 from tqdm import tqdm
 
+warnings.warn("'libs.clustering' is deprecated. Use 'libs.cluster' instead", category=DeprecationWarning)
+
 MININF = -float("inf")
 
 def cprint(counter, min_weight=0.9, max_classes=5):
