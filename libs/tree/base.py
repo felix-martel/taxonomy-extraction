@@ -8,6 +8,10 @@ Basic tree ideas: a Node is identified to its subtree, that is a Tree can be:
 # TODO: add a 'plot with Plotly' feature
 # TODO: add static creation methods 'from_tree', 'from_revtree', + dump/load methods
 # TODO: add the notion of *tree compression* (subtree containing only selected nodes)
+
+Note: is the use of TNode necessary? The idea comes from
+https://realpython.com/python-type-checking/#playing-with-python-types-part-1
+Is there a more straightforward way to have proper type hinting when subclassing?
 """
 from typing import List, Union, Dict, Tuple, Iterable, Callable, Generator, TextIO,\
     Generic, Hashable, TypeVar, Optional, Type
@@ -33,7 +37,7 @@ class Node(Generic[T]):
     """
     Base class for representing a tree and a node a in a tree (same thing)
     """
-    def __init__(self: TNode,
+    def __init__(self,
                  id_: T,
                  name: Optional[str] = None,
                  parent: Optional[TNode] = None,
