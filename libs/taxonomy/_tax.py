@@ -47,13 +47,6 @@ class Taxonomy(Node):
         super().__init__(name, *args, **kwargs)
         self.at_depth = None
 
-    def build_at_depth(self):
-        self.at_depth = dict()
-        for t in self:
-            if t.depth not in self.at_depth:
-                self.at_depth[t.depth] = list()
-            self.at_depth[t.depth].append(t)
-
     @classmethod
     def load(cls, name: str = "full") -> "Taxonomy":
         """
@@ -102,7 +95,7 @@ class Taxonomy(Node):
         Return a nice summary of the taxonomy, e.g
         """
         if self.at_depth is None:
-            self.build_at_depth()
+            self.at_depth = self._build_at_depth()
         n_classes = sum(len(classes) for classes in self.at_depth.values())
 
         def print_level(k):
