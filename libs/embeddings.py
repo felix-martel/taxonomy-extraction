@@ -45,6 +45,8 @@ HolE = [
 
 MODELS = {"ComplEx": ComplEx, "TransE": TransE, "TransH": TransH, "TransD": TransD, "RDF2Vec": RDF2Vec, "DistMult": DistMult, "HolE": HolE}
 
+DEFAULT = TransE
+
 def models(name=None):
     if name is None:
         return it.chain(*MODELS.values())
@@ -53,7 +55,11 @@ def models(name=None):
 def filename(name, which="ent"):
     return os.path.join(DIR, name, file[which])
 
-def load(model, dim=None, epochs=None):
+def load(model=None, dim=None, epochs=None):
+    if isinstance(model, np.ndarray):
+        return model
+    if model is None:
+        model = DEFAULT
     if isinstance(model, list):
         m = model[0]
     else:
