@@ -1,16 +1,17 @@
 from collections import Counter
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Callable
+from operator import attrgetter
 
 import numpy as np
-
-from libs.utils.format import format_counter
-from libs.dataset import Dataset
-from libs.tree import Node
-import libs.embeddings
-from operator import attrgetter
+import pandas as pd
+from tqdm import tqdm
 from sklearn.cluster import AgglomerativeClustering
 
+import libs.embeddings
+from libs.dataset import Dataset
+from libs.tree import Node
 from libs.utils.timer import Timer
+from libs.utils.format import format_counter
 
 
 def run_clustering(data: Dataset, embeddings: np.ndarray, use_full_matrix: bool = False, verbose: bool = False,
@@ -23,6 +24,7 @@ def run_clustering(data: Dataset, embeddings: np.ndarray, use_full_matrix: bool 
     :param embeddings: a m x d matrix containg the entities' embeddings
     :param use_full_matrix: if True, then m=d and embedding indices should match dataset indices. Else, m > n
         and entity i in the dataset is represented by line i in the embedding matrix
+    :param verbose: whether to display a Timer
     :param params: a parameter dict passed to `AgglomerativeClustering`
     :return: the fitted AgglomerativeClustering object
     """
@@ -38,11 +40,12 @@ def build_clustering(clu: AgglomerativeClustering, data: Dataset) -> "Cluster":
     """
     Build a clustering tree from a fitted AgglomerativeClustering object
     """
-    n_samples: int = len(clu.children_)
+    n_samples: int = len(clu.children_) + 1
     edges = [(child, parent+n_samples)
              for parent, children in enumerate(clu.children_)
              for child in children]
     clustering_tree = Cluster.from_edges(edges, data=data)
+    clustering_tree.init_composition()
     return clustering_tree
 
 def clusterize(data: Dataset, embeddings: Optional[np.ndarray] = None, **params) -> "Cluster":
@@ -77,15 +80,27 @@ class Cluster(Node):
             data = self.parent.data
         self.children: List["Cluster"]
         self.data = data
+        self.size = 1 if self.is_leaf else \
+                    sum(map(attrgetter("size"), self.children))
+        self._composition: Optional[Counter] = None
 
+    def get_composition(self) -> Counter:
+        if self.data is None:
+            raise ValueError("Can't compute composition if 'data' is not set")
         if self.is_leaf:
-            class_id = self.data.labels[id_]
-            class_name = self.data.cls2name[class_id]
-            self.composition: Counter[str, int] = Counter([class_name])
-            self.size: int = 1
-        else:
-            self.composition = sum(map(attrgetter("composition"), self.children))
-            self.size = sum(map(attrgetter("size"), self.children))
+            class_id = self.data.labels[self.id]
+            class_name: str = self.data.cls2name[class_id]
+            return Counter({class_name: 1})
+        return sum(map(attrgetter("composition"), self.children),  Counter())
+
+    def init_composition(self):
+        self._composition = self.get_composition()
+
+    @property
+    def composition(self) -> Counter:
+        if self._composition is None:
+            self._composition = self.get_composition()
+        return self._composition
 
     @property
     def main_class(self) -> str:
@@ -113,3 +128,15 @@ class Cluster(Node):
         else:
             for child in self.children:
                 yield from child.items(return_ids)
+
+    def get_func_matrix(self, func: Callable[..., float], *args, verbose=False, **kwargs) -> pd.DataFrame:
+        classes = self.data.name2cls.keys()
+        n_classes = len(classes)
+        n_clusters = len(self.tree)
+
+        X = np.zeros((n_clusters, n_classes))
+        for j, cls in tqdm(enumerate(classes), total=n_classes, disable=not verbose, desc="Building matrix"):
+            for i, node in enumerate(self):
+                X[i, j] = func(node, cls, *args, **kwargs)
+
+        return pd.DataFrame(X, columns=classes, index=range(n_clusters))
