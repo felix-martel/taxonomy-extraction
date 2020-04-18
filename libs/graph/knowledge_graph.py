@@ -20,6 +20,9 @@ class KnowledgeGraph:
     h -> r -> t
     r -> h -> t
     t -> r -> h
+
+    Warning: this implementation is NOT memory efficient. Large graphs can consume a lot of memory (~20GB for the full
+    DBpedia graph). Reading a graph from files can take some time (~7 to 9 minutes for DBpedia)
     """
     files = FILES
     isa = "rdf:type"
