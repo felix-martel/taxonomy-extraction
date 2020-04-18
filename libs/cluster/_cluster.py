@@ -21,7 +21,7 @@ def run_clustering(data: Dataset, embeddings: np.ndarray, use_full_matrix: bool 
     `sklearn.cluster.AgglomerativeClustering`.
 
     :param data: a `Dataset` of length n containing the ids of the entities to cluster
-    :param embeddings: a m x d matrix containg the entities' embeddings
+    :param embeddings: a m x d matrix containing the entities' embeddings
     :param use_full_matrix: if True, then m=d and embedding indices should match dataset indices. Else, m > n
         and entity i in the dataset is represented by line i in the embedding matrix
     :param verbose: whether to display a Timer
@@ -41,12 +41,13 @@ def build_clustering(clu: AgglomerativeClustering, data: Dataset) -> "Cluster":
     Build a clustering tree from a fitted AgglomerativeClustering object
     """
     n_samples: int = len(clu.children_) + 1
-    edges = [(child, parent+n_samples)
+    edges = [(child, parent + n_samples)
              for parent, children in enumerate(clu.children_)
              for child in children]
     clustering_tree = Cluster.from_edges(edges, data=data)
     clustering_tree.init_composition()
     return clustering_tree
+
 
 def clusterize(data: Dataset, embeddings: Optional[np.ndarray] = None, **params) -> "Cluster":
     """
@@ -72,6 +73,7 @@ class Cluster(Node):
     - iterate over subclusters --> NO: use self.children
     - bfs / dfs : already implemented
     """
+
     def __init__(self, id_: int, parent: Union[None, "Cluster"] = None, tree=None, data: Union[None, Dataset] = None):
         name = f"C<{id_}>"
         super().__init__(id_, name, parent, tree)
@@ -81,7 +83,7 @@ class Cluster(Node):
         self.children: List["Cluster"]
         self.data = data
         self.size = 1 if self.is_leaf else \
-                    sum(map(attrgetter("size"), self.children))
+            sum(map(attrgetter("size"), self.children))
         self._composition: Optional[Counter] = None
 
     def get_composition(self) -> Counter:
@@ -91,7 +93,7 @@ class Cluster(Node):
             class_id = self.data.labels[self.id]
             class_name: str = self.data.cls2name[class_id]
             return Counter({class_name: 1})
-        return sum(map(attrgetter("composition"), self.children),  Counter())
+        return sum(map(attrgetter("composition"), self.children), Counter())
 
     def init_composition(self):
         self._composition = self.get_composition()
