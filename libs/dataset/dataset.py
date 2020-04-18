@@ -6,7 +6,7 @@ import numpy as np
 from collections import defaultdict, deque, Counter
 import heapq as hq
 import warnings
-from timer import Timer
+from libs.utils.timer import Timer
 
 from .io import load_dataset, save_dataset
 
@@ -91,7 +91,15 @@ class Dataset:
             del self.name2cls[cls_name]
             del self.cls2name[cls_id]
         self.axioms = {(a, b) for (a, b) in self.axioms if a not in empty_classes and b not in empty_classes}
-            
+
+    @property
+    def n_classes(self):
+        return len(self.name2cls)
+
+    @property
+    def n_instances(self):
+        return len(self.indices)
+
     @classmethod
     def load(cls, dirname):
         """Load dataset for a directory"""
