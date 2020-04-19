@@ -8,6 +8,9 @@ from .id_mapper import IdMapper
 from collections import defaultdict
 from tqdm import tqdm
 
+from .uri import load
+from ..utils import Mapper
+
 
 DoubleDict = lambda:defaultdict(lambda:defaultdict(set))
 
@@ -23,17 +26,20 @@ class KnowledgeGraph:
 
     Warning: this implementation is NOT memory efficient. Large graphs can consume a lot of memory (~20GB for the full
     DBpedia graph). Reading a graph from files can take some time (~7 to 9 minutes for DBpedia)
+
+    # TODO: create a toy graph for experimentation
+    # TODO: replace IdMappers by Mapper
     """
     files = FILES
     isa = "rdf:type"
 
-    def __init__(self, entities=IdMapper(), relations=IdMapper()):
+    def __init__(self, entities=None, relations=None):
         self._h = DoubleDict()
         self._r = DoubleDict()
         self._t = DoubleDict()
         
-        self.ent = entities
-        self.rel = relations
+        self.ent = entities if entities is not None else IdMapper
+        self.rel = relations if relations is not None else IdMapper
         
         self.n_triples = 0
             
