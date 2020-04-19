@@ -1,4 +1,5 @@
-from typing import TypeVar, List, Iterable, Union, Optional, Dict, Generic, Hashable, Type, Tuple, Iterator, Mapping
+from typing import TypeVar, List, Iterable, Union, Optional, Dict, Generic, Hashable, Type, Tuple, Iterator, Mapping, \
+    no_type_check
 
 A = TypeVar("A", bound=Hashable)
 B = TypeVar("B", bound=Hashable)
@@ -32,12 +33,28 @@ class Mapper(Generic[A, B], Iterable[Tuple[A, B]]):
     """
 
     def __init__(self, data, class_a: str = "a", class_b: str = "b",
-                 type_a: Optional[Type] = None, type_b: Optional[Type] = None) -> None:
+                 type_a: Optional[Type] = None, type_b: Optional[Type] = None, auto_id: bool = False) -> None:
+        if auto_id:
+            type_b = int
         self.a2b, self.b2a = self.process(data)
         self.autotype, self.type_a, self.type_b = self.check_types(type_a, type_b)
         self.__name_a, self.__name_b = "a", "b"
         self.name_a = class_a
         self.name_b = class_b
+        self.auto_id = auto_id
+
+    def add(self, a: A, b: Optional[B] = None, exist_ok: bool = True):
+        if b is None:
+            if not self.auto_id:
+                raise ValueError("Since auto_id=False, you must provide a value for parameter b")
+            else:
+                b = max(self.b2a) + 1
+        if a in self.a2b and not exist_ok:
+            raise ValueError(f"'{a}' already in self.{self.name_a}s. Set exist_ok=True to insert anyway")
+        if b in self.b2a and not exist_ok:
+            raise ValueError(f"'{b}' already in self.{self.name_b}s. Set exist_ok=True to insert anyway")
+        self.a2b[a] = b
+        self.b2a[b] = a
 
     def __repr__(self):
         return f"Mapper(from={self.name_a}, to={self.name_b})"
@@ -109,6 +126,10 @@ class Mapper(Generic[A, B], Iterable[Tuple[A, B]]):
             type_b = type(next(iter(self.iter_bs)))
         a_ok = all(isinstance(a, type_a) for a in self.iter_as)
         b_ok = all(isinstance(b, type_b) for b in self.iter_bs)
+        if not a_ok:
+            raise TypeError(f"Not all values in 'a' have type {type_a}")
+        if not b_ok:
+            raise TypeError(f"Not all values in 'b' have type {type_b}")
         distinct = type_a != type_b
         autotype = a_ok and b_ok and distinct
         return autotype, type_a, type_b
