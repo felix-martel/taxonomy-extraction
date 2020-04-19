@@ -9,6 +9,12 @@ def split_couple(line, sep=" "):
     return name, int(idx)
 
 class IdMapper:
+    """
+    A two-way mapping between URIs and IDs in a knowledge graph.
+
+    Class `utils.Mapper` is based on it
+    # TODO: replace it by the generic `utils.Mapper`
+    """
     prefixes = {
        "http://dbpedia.org/ontology/": "dbo",
         "http://dbpedia.org/resource/": "dbr",
