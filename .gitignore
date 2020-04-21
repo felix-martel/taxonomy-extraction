@@ -1,4 +1,4 @@
-*.ipynb
+private/
 .ipynb_checkpoints
 */.ipynb_checkpoints
 .idea/*
