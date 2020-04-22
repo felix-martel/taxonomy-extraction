@@ -119,7 +119,7 @@ class IdMapper:
     @classmethod
     def from_file(cls, filename, verbose=True):
         rel = cls()
-        with open(filename, "r") as f:
+        with open(filename, "r", encoding="utf8") as f:
             n_items = int(next(f))
             for i, line in tqdm(enumerate(f), total=n_items, disable=not verbose):
                 try:

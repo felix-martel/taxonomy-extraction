@@ -10,7 +10,7 @@ FILES = {
 
 def iter_training_files(files):
     for file in files:
-        with open(file, "r") as f:
+        with open(file, "r", encoding="utf8") as f:
             next(f)
             for line in f:
                 h, t, r = map(int, line.rstrip().split(" "))
