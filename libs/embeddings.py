@@ -46,7 +46,13 @@ HolE = [
     "HolE_50d_60e",
 ]
 
-MODELS = {"ComplEx": ComplEx, "TransE": TransE, "TransH": TransH, "TransD": TransD, "RDF2Vec": RDF2Vec, "DistMult": DistMult, "HolE": HolE}
+Toy = [
+    "toy"
+]
+
+MODELS = {
+    "ComplEx": ComplEx, "TransE": TransE, "TransH": TransH, "TransD": TransD, "RDF2Vec": RDF2Vec,
+    "DistMult": DistMult, "HolE": HolE, "toy": Toy}
 
 DEFAULT = TransE
 
