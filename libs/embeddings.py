@@ -3,7 +3,10 @@ import itertools as it
 import numpy as np
 from tqdm import tqdm
 
-DIR = "data/dbpedia/embeddings"
+from libs import CONST
+
+
+DIR = CONST["embeddings"]["dirname"]  #  "data/dbpedia/embeddings"
 ent_file = "ent_embeddings.npy"
 rel_file = "rel_embeddings.npy"
 file = {"ent": ent_file, "rel": rel_file}
