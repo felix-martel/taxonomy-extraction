@@ -32,6 +32,10 @@ class KnowledgeGraph:
     """
     files = FILES
     isa = "rdf:type"
+    registered = {
+        "full": "data/dbpedia/filtered_3M",
+        "toy": "data/graph/toy",
+    }
 
     def __init__(self, entities=None, relations=None):
         self._h = DoubleDict()
@@ -106,20 +110,6 @@ class KnowledgeGraph:
     def __contains__(self, key):
         h, r, t = self.dispatch_triple(key)
         return (h in self._h) and (r in self._h[h]) and (t in self._h[h][r])
-    
-    @classmethod
-    def from_file(cls, filename):
-        rel = cls()
-        with open(filename, "r") as f:
-            next(f)
-            for i, line in enumerate(f):
-                try:
-                    uri, idx = split_line(line)
-                except ValueError as e:
-                    print(i, line)
-                    raise e
-                rel.add(uri, idx)
-            return rel
 
     def get_class_sizes(self):
         """
@@ -144,7 +134,10 @@ class KnowledgeGraph:
         return [os.path.join(d, cls.files[t]) for t in ["train", "test", "val"]]
         
     @classmethod
-    def from_dir(cls, d, max_triples=float("inf"), verbose=True, exclude_entities=None, exclude_relations=None, remove_invalid_types=False):
+    def from_dir(cls, d, max_triples=float("inf"), verbose=True, exclude_entities=None, exclude_relations=None,
+                 remove_invalid_types=False):
+        if d in cls.registered:
+            d = cls.registered[d]
         if exclude_relations is None:
             exclude_relations = set()
         if exclude_entities is None:
