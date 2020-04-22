@@ -14,7 +14,6 @@ from collections import Counter
 
 
 warn("'libs.taxo' is deprecated. Use module 'libs.taxonomy' instead", category=DeprecationWarning)
-#TODO: `Taxonomy` should inherit from `libs.tree.Node`
 
 class TaxonomyItem:
     def __init__(self, class_name, parent=None, selected=True):
@@ -274,7 +273,6 @@ class Taxonomy:
     def get_subtree(self, root):
         """
         Return a subtaxonomy with root `root`
-        #TODO: huge refactor (remove TaxonomyItem)
         """
         assert root in self
         axioms = set()
@@ -406,7 +404,6 @@ def html_print(tax, html_func, **kwargs):
     def print_tree(current_node, childattr='children', nameattr='name', display_func=print,
                    indent='', last='updown', max_depth=None, halting_func=None, print_params={}):
         """
-        TODO: comment arguments
         nameattr:
         - if string, then the name of a node will be the value of node.{nameattr}
         - if callable, then the name of a node will be nameattr(node)

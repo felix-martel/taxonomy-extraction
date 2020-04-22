@@ -15,7 +15,6 @@ class Node:
 def print_tree(current_node, childattr='children', nameattr='name', 
                indent='', last='updown', max_depth=None, halting_func=None, print_params={}):
     """
-    TODO: comment arguments
     nameattr:
     - if string, then the name of a node will be the value of node.{nameattr}
     - if callable, then the name of a node will be nameattr(node)
