@@ -1,0 +1,10 @@
+{
+  "constants": {
+    "embeddings": {
+      "dirname": "data/embeddings/"
+    },
+    "taxonomy": {
+      "dirname": "data/taxonomy/"
+    }
+  }
+}
