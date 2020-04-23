@@ -96,6 +96,14 @@ class KnowledgeGraph:
             h, t = self.ent.to_name(h, t)
             r = self.rel.to_name(r)
             yield h, r, t
+
+    def iter_head_tails(self, rel, as_string=False):
+        for h, ts in self._r[rel].items():
+            for t in ts:
+                if as_string:
+                    yield self.ent.to_name(h), self.ent.to_name(t)
+                else:
+                    yield h, t
             
     def dispatch_triple(self, triple, from_="auto", to_="id"):
         h, r, t = triple
