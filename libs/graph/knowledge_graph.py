@@ -1,3 +1,4 @@
+import itertools as it
 from .ttl import iter_files, get_identifier
 import random
 import os 
@@ -28,6 +29,7 @@ class KnowledgeGraph:
     DBpedia graph). Reading a graph from files can take some time (~7 to 9 minutes for DBpedia)
 
     # TODO: replace IdMappers by Mapper
+    # TODO: rethink autodispatch (decorator? subclass? singledispatch?)
     """
     files = FILES
     isa = "rdf:type"
@@ -166,6 +168,13 @@ class KnowledgeGraph:
                 return kg
             kg.add(h, r, t)
             n_triples += 1
+        return kg
+
+    @classmethod
+    def from_triples(cls, triples):
+        kg = cls()
+        for triple in triples:
+            kg.add_uris(*triple)
         return kg
         
     def to_dir(self, d, test_split=0.1, val_split=0.1):
@@ -311,6 +320,28 @@ class KnowledgeGraph:
                 raise ValueError(f"Can't sample {n} items from a set of size {len(instances)} for type '{from_type}'.")
             return instances
         return random.sample(instances, n)
+
+    def get_heads(self, t):
+        """t --> h"""
+        return set(it.chain(*self._t[t].values()))
+
+    def get_tails(self, h):
+        """h --> t"""
+        return set(it.chain(*self._h[h].values()))
+
+    def get_subjects(self, r):
+        """r --> h"""
+        return self._r[r].keys()
+
+    def get_rels(self, h):
+        """h --> r"""
+        return self._h[h].keys()
+
+    get_out_rels = get_rels
+
+    def get_in_rels(self, t):
+        """t --> r"""
+        return self._t[t].keys()
 
 def load_toyset():
     kg = KnowledgeGraph()
