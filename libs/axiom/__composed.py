@@ -1,6 +1,8 @@
-from libs.axiom import Axiom
-from libs.axiom.atomic import AtomicAxiom
-from libs.axiom.operators import AxiomOp
+# from libs.axiom import Axiom
+# import libs.axiom.base as base
+# from libs.axiom.atomic import AtomicAxiom
+# from libs.axiom.operators import AxiomOp
+from libs.axiom import Axiom, AtomicAxiom, AxiomOp
 
 
 class NaryAxiom(Axiom):

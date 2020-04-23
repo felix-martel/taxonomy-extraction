@@ -5,7 +5,7 @@ import numpy as np
 
 from .symbol import Rel, Sym
 from .base import Axiom
-from libs.graph import KnowledgeGraph
+from ..graph import KnowledgeGraph
 
 
 class AtomicAxiom(Axiom, ABC):
@@ -39,6 +39,7 @@ class Concept(AtomicAxiom):
         else:
             name = concept if concept is not None else "{" + singleton + "}"
         super().__init__(name)
+        self.rel = "rdf:type"
         self.concept = concept if concept is not None else singleton
         self.is_singleton = concept is None
         self.is_top = False
@@ -82,9 +83,11 @@ class Existential(AtomicAxiom):
     `x` is linked to another entity `y` by the relation `R`, with `y` belonging to concept `C`:
     $$x \in \exists R.C \iff \exists y \in \mathcal{E}, (x, R, y) \in \Delta \land C(y)$$
     """
-    def __init__(self, rel: str, concept: Union[None, Concept], vec=None) -> None:
+    def __init__(self, rel: str, concept: Union[None, str, Concept], vec=None) -> None:
         if concept is None:
             concept = TopAxiom
+        elif isinstance(concept, str):
+            concept = Concept(concept)
         name = f"{Sym.EXISTS}{rel}.{concept.name}"
         super().__init__(name, vec)
         self.rel = rel
