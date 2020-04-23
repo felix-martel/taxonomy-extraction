@@ -1,0 +1,7 @@
+dbo:Athlete dbo:Person
+dbo:Person dbo:Agent
+dbo:Organisation dbo:Agent
+dbo:SocietalEvent dbo:Event
+dbo:SportsEvent dbo:Event
+dbo:Settlement dbo:PopulatedPlace
+dbo:PopulatedPlace dbo:Location
