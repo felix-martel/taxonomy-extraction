@@ -1,12 +1,14 @@
 from time import time
 from libs.utils.logging import beep
 from datetime import timedelta, datetime, date
-
+from functools import wraps
 
 class Timer(object):
-    def __init__(self, message="Done in {}.", audio=False, disable=False):
+    def __init__(self, message=None, audio=False, disable=False):
         self._start = None
         self._stop = None
+        if message is None:
+            message = "Done in {}."
         self.message = str(message)
         if "{}" not in self.message:
             self.message += " ({})"
@@ -54,3 +56,13 @@ def now():
 
 def today():
     return date.today()
+
+def timeit(func):
+    """
+    Decorator for timing a function
+    """
+    @wraps(func)
+    def timed_func(*args, **kwargs):
+        with Timer():
+            return func(*args, **kwargs)
+    return timed_func
