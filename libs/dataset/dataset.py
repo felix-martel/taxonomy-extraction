@@ -1,66 +1,12 @@
-import os
-import math
 import random
-import numpy as np
-
-from collections import defaultdict, deque, Counter
-import heapq as hq
-import warnings
-from libs.utils.timer import Timer
+from typing import Optional, Iterable, Tuple, Dict, List, Iterator, Set
+from collections import defaultdict, Counter
 
 from .io import load_dataset, save_dataset
 
-DEFAULT_CLUSTER_DIR = "data/flat_clusters/"
-DEFAULT_EMBED_FILE = "data/dbpedia/embeddings/TransE_50d_100e/ent_embeddings.npy"
+AxiomTuple = Tuple[str, str]
 
-def create_from_classes(graph, classes, class_size=100, force_size=True, **kwargs):
-    """Create dataset from a list of classnames"""
-    # TODO: add proper axiom creation
-    cls2name = classes
-    name2cls = {name: cls for cls, name in enumerate(cls2name)}
-    
-    if isinstance(class_size, int):
-        class_size = [class_size] * len(cls2name)
-    else:
-        assert len(class_size) == len(cls2name), f"Size mismatch between class list ({len(cls2name)}) and size list ({len(class_size)})"
-    
-    indices = []
-    labels = []
-    for size, (t, label) in zip(class_size, name2cls.items()):
-        ids = graph.sample_instances(size, from_=t, force_size=force_size, **kwargs)
-        labs = [label] * len(ids)
-        indices.extend(ids)
-        labels.extend(labs)
 
-    return Dataset(indices, labels, name2cls, cls2name, axioms=set())
-
-def create_from_instances(graph, instances, is_valid=None, isa="rdf:type"):
-    if is_valid is None:
-        def is_valid(cls): return "dbo:" in cls
-    elif isinstance(is_valid, (list, set, tuple)):
-        _is_valid = set(is_valid)
-        def is_valid(cls): return cls in _is_valid
-    else:
-        if not callable(is_valid):
-            raise TypeError("'is_valid' must be a list of valid class names, a function str->bool or None")
-    indices = []
-    labels = []
-    name2cls, cls2name = {}, {}
-    r = graph.rel.to_id(isa)
-    for i in instances:
-        types = {t for _, _, t in graph.find_triples(h=i, r=r, as_string=True) if is_valid(t)}
-        if not types:
-            continue
-        t = random.sample(types, 1)[0]
-        if t not in name2cls:
-            name2cls[t] = len(name2cls)
-        t = name2cls[t]
-        indices.append(i)
-        labels.append(t)
-    cls2name = {c:n for n, c in name2cls.items()}
-    #print(len(indices), len(name2cls))
-    return Dataset(indices, labels, name2cls, cls2name, axioms=set())
-    
 class Dataset:
     DBPEDIA_SMALL = "data/taxonomies/full_small/"
     DBPEDIA_FULL = "data/taxonomies/full_large/" #"data/full_flat_clusters/"
@@ -70,13 +16,16 @@ class Dataset:
         "large": DBPEDIA_FULL # alias for 'full'
     }
     
-    def __init__(self, indices, labels, name2cls, cls2name, axioms, dirname=None, remove_empty_classes=False):
+    def __init__(self, indices: List[int], labels: List[int],
+                 name2cls: Dict[str, int], cls2name: Dict[int, str],
+                 axioms: Iterable[AxiomTuple], dirname: Optional[str] = None,
+                 remove_empty_classes: bool = False) -> None:
         self.ids = list(range(len(indices)))
         self.indices = indices
         self.labels = labels
         self.name2cls = name2cls
         self.cls2name = cls2name
-        self.axioms = axioms
+        self.axioms: Set[AxiomTuple] = set(axioms)
         self.class_count = self._get_class_count()
         self.class_instances = self._get_class_instances()
         self.dirname = dirname
@@ -84,7 +33,10 @@ class Dataset:
             self.remove_empty_classes()
         
     def remove_empty_classes(self, verbose=False):
-        empty_classes = {cls_name: cls_id for cls_name, cls_id in self.name2cls.items() if cls_name not in self.class_count or self.class_count[cls_name] == 0}
+        empty_classes = {cls_name: cls_id for cls_name, cls_id in self.name2cls.items()
+                         if cls_name not in self.class_count
+                         or self.class_count[cls_name] == 0
+                         }
         if verbose:
             print(f"Remove the following empty classes: {', '.join(empty_classes)}")
         for cls_name, cls_id in empty_classes.items():
@@ -93,15 +45,21 @@ class Dataset:
         self.axioms = {(a, b) for (a, b) in self.axioms if a not in empty_classes and b not in empty_classes}
 
     @property
-    def n_classes(self):
+    def n_classes(self) -> int:
+        """
+        Number of unique classes in the dataset
+        """
         return len(self.name2cls)
 
     @property
-    def n_instances(self):
+    def n_instances(self) -> int:
+        """
+        Number of entities in the dataset
+        """
         return len(self.indices)
 
     @classmethod
-    def load(cls, dirname):
+    def load(cls, dirname) -> "Dataset":
         """Load dataset for a directory"""
         if dirname in cls.REGISTERED_DATASETS:
             dirname = cls.REGISTERED_DATASETS[dirname]
@@ -109,22 +67,23 @@ class Dataset:
         return cls(**data)
     
     def save(self, dirname):
+        """Save dataset to a directory"""
         save_dataset(self, dirname)
-        
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """Iterate over (entity id, entity class) pairs"""
         for nid, index, label in zip(self.ids, self.indices, self.labels):
             yield nid, index, label
             
-    def __len__(self):
+    def __len__(self) -> int:
+        """Return the number of entities in the dataset"""
         return len(self.ids)
     
-    def _get_class_count(self):
+    def _get_class_count(self) -> Counter:
         """Get the number of entities per class"""
         return Counter(self.cls2name[cls] for cls in self.labels)
     
-    def _get_class_instances(self):
+    def _get_class_instances(self) -> Dict[str, set]:
         """Get the list of entity ids in each class"""
         instances = defaultdict(set)
         for instance, index, label in self:
@@ -132,19 +91,21 @@ class Dataset:
             instances[class_name].add(instance)
         return instances
     
-    def sample_from_cls(self, cls_name, k=1):
-        samples = random.sample(data.class_instances[cls_name], k=k)
+    def sample_from_cls(self, cls_name: str, k: int = 1):
+        """Sample `k` entities from a given class"""
+        samples = random.sample(self.class_instances[cls_name], k=k)
         if k == 1:
             return samples[0]
         return samples
     
-    def summary(self, n=5):
+    def summary(self, n=5) -> str:
+        """Return a summary of the dataset's content (number of classes, instances & more)"""
         maxlen = max(map(len, self.name2cls.keys())) + 2
         header = f"Dataset ({len(self.name2cls)} classes, {len(self)} instances):\n---\n"
         freqs = "\n".join(f"{cls:{maxlen}} {count}" for cls, count in self.class_count.most_common(n))
         return header + freqs + "\n..."
     
-    def set_root(self, root):
+    def set_root(self, root: str):
         children, parents = zip(*self.axioms)
         subroots = set(parents) - set(children)
         if len(subroots) == 1:
@@ -153,8 +114,5 @@ class Dataset:
         for child in subroots:
             if child != root:
                 new_axiom = (child, root)
-                if isinstance(self.axioms, set):
-                    self.axioms.add(new_axiom)
-                else:
-                    self.axioms.append(new_axiom)
+                self.axioms.add(new_axiom)
     
