@@ -1,0 +1,71 @@
+Taxonomy generated using the Soft Mapping method on DBpedia-Freq with TransE embeddings, cosine similarity and average linkage.
+
+                                   ┌dbo:Aircraft
+                                   ├dbo:Ship
+          ┌dbo:MeanOfTransportation┤
+          │                        ├dbo:Locomotive
+          │                        ├dbo:Automobile
+          │                        └dbo:Train
+          │           ┌dbo:Bacteria
+          ├dbo:Species┤
+          │           │             ┌dbo:Plant
+          │           └dbo:Eukaryote┤
+          │                         ├dbo:Animal
+          │                         └dbo:Fungus
+          │        ┌dbo:Film
+          │        ├dbo:Software
+          │        ├dbo:TelevisionEpisode
+          │        ├dbo:TelevisionShow
+          ├dbo:Work┤
+          │        │               ┌dbo:Musical
+          │        │               ├dbo:Single
+          │        ├dbo:MusicalWork┤
+          │        │               ├dbo:Album
+          │        │               └dbo:Song
+          │        │               ┌dbo:Book
+          │        │               ├dbo:Play
+          │        └dbo:WrittenWork┤
+          │                        ├dbo:PeriodicalLiterature
+          │                        └dbo:Comic
+ owl:Thing┤
+          │         ┌dbo:MountainPass
+          │         ├dbo:Venue
+          │         ├dbo:Park
+          │         ├dbo:MountainRange
+          │         ├dbo:CelestialBody
+          │         │                ┌dbo:BodyOfWater
+          │         ├dbo:NaturalPlace┤
+          │         │                └dbo:Mountain┐
+          │         │                             └dbo:Volcano
+          ├dbo:Place┤
+          │         │                          ┌dbo:Infrastructure
+          │         │                          ├dbo:SportFacility
+          │         │                          ├dbo:ProtectedArea
+          │         │                          ├dbo:Tower
+          │         ├dbo:ArchitecturalStructure┤
+          │         │                          ├dbo:MilitaryStructure┐
+          │         │                          │                     └dbo:Glacier
+          │         │                          └dbo:HistoricPlace┐
+          │         │                                            └dbo:Building
+          │         │                  ┌dbo:Country
+          │         │                  ├dbo:Settlement
+          │         └dbo:PopulatedPlace┤
+          │                            └dbo:Region┐
+          │                                       └dbo:Island
+          │         ┌dbo:OrganisationMember
+          │         ├dbo:Athlete
+          │         │          ┌dbo:Artist
+          │         │          ├dbo:OfficeHolder
+          │         ├dbo:Person┤
+          │         │          ├dbo:Politician
+          │         │          ├dbo:MilitaryPerson
+          │         │          └dbo:Writer
+          └dbo:Agent┤
+                    │                ┌dbo:MilitaryUnit
+                    │                ├dbo:Broadcaster
+                    │                ├dbo:EducationalInstitution
+                    └dbo:Organisation┤
+                                     ├dbo:SportsTeam
+                                     ├dbo:Company
+                                     ├dbo:Group
+                                     └dbo:PoliticalParty
