@@ -3,9 +3,12 @@ Code for automatically extracting expressive and non-expressive taxonomies from 
 
 ![Overview of the taxonomy extraction method](https://github.com/felix-martel/taxonomy-extraction/raw/master/data/img/summary.png)
 
+**Non-expressive :**
 Starting from a knowledge graph KG and a set of entity-type pairs, (1) entities are embedded into a *d*-dimensional vector space (2) then they’re hierarchically clustered; (3) each type in the original dataset is then mapped to one of the cluster, (4) the taxonomy is extracted by removing non-selected clusters.
 
-For expressive taxonomy extraction, the algorithm starts from an axiom *A*, sample *n* entities verifying this axiom, and run a hierarchical clustering over them. The clusters are then labelled by expressive axioms using statistics on linked data, and a taxonomic tree *T(A)* is extracted. Then, *T(A)* is iteratively expanded by sampling new entities from the axioms in *T(A)* and adding the extracted subtrees to *T(A)*. 
+Two methods for mapping types to clusters: *Hard Mapping* and *Soft Mapping*. Hard Mapping computes an optimal, one-for-one injective mapping between types and clusters by solving a linear sum assignment problem (right now I'm using the [Kuhn-Munkres algorithm](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html) but I plan to implement a more efficient heuristic, such as [Asymmetric Greedy Search](https://link.springer.com/article/10.1007/s10878-015-9979-2)). Soft Mapping defines a mapping score between types and clusters, recursively computes a probability for each subsumption axiom, and performs a transitive reduction on the resulting DAG.
+
+**Expressive :** for expressive taxonomy extraction, the algorithm starts from an axiom *A*, sample *n* entities verifying this axiom, and run a hierarchical clustering over them. The clusters are then labelled by expressive axioms using statistics on linked data, and a taxonomic tree *T(A)* is extracted. Then, *T(A)* is iteratively expanded by sampling new entities from the axioms in *T(A)* and adding the extracted subtrees to *T(A)*. 
 
 
 The core code is contained in `libs`:
