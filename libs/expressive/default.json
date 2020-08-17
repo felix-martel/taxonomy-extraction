@@ -1,0 +1,55 @@
+{
+    "size": {
+        "size": 1000,
+        "initial": 4000,
+        "decrease": 0.9,
+        "plateau": 600
+    },
+    "seed": null,
+    "threshold": {
+        "adaptative": true,
+        "opt": 0.9,
+        "initial": 0.9,
+        "min": 0.6,
+        "step": 0.05,
+        "expressive": 0.5,
+        "current": 0.9
+    },
+    "max_depth": 4,
+    "max_depth_step": 0,
+    "patterns": {
+        "individuals": true,
+        "existential": true
+    },
+    "metric": "harmonic",
+    "max_axioms": 2,
+    "min_gain": 0.08,
+    "allow_child": false,
+    "others": {
+        "keep": true,
+        "n": 8,
+        "threshold": 0.9
+    },
+    "halting": {
+        "min_size": 30,
+        "max_rec_steps": 40,
+        "max_clustering_steps": 100,
+        "max_extracted_depth": 15,
+        "memory_limit": 115343360
+    },
+    "extra": {
+        "active": true,
+        "n": 100,
+        "reset_classes": true,
+        "depth": 20,
+        "threshold": 0.15
+    },
+    "record": {
+        "save_taxonomy": true,
+        "checkpoints": true,
+        "checkpoint_every": 100,
+        "dirname": "results/taxonomy/auto",
+        "name_pattern": "taxonomy_{halting.max_clustering_steps}s_{timestamp:%m%d_%Hh%M}"
+    },
+    "display": true
+}
