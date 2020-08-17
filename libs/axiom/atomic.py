@@ -46,15 +46,15 @@ class Concept(AtomicAxiom):
         self.A = None
         self.i = None
 
-    def set_vec(self, A: np.ndarray, i: int) -> None:
-        self.A = A
-        self.i = i
-
-    @property
-    def vec(self) -> Union[None, np.ndarray]:
-        if self.A is None:
-            return None
-        return self.A[:self.i]
+    # def set_vec(self, A: np.ndarray, i: int) -> None:
+    #     self.A = A
+    #     self.i = i
+#
+    # @property
+    # def vec(self) -> Union[None, np.ndarray]:
+    #     if self.A is None:
+    #         return None
+    #     return self.A[:, self.i]
 
     def clear_memory(self) -> None:
         self.A = None
@@ -122,3 +122,6 @@ class EmptyAxiom(Axiom):
     def specificity(self, mask=None): return 0.0
 
     def xor_score(self, mask): return 0.0
+
+    def evaluate(self, mask, how="arithmetic"):
+        return 0, 0, 0

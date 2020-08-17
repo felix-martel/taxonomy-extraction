@@ -1,5 +1,7 @@
 import numpy as np
 from typing import Union, Iterable, Generator
+
+from libs.utils.misc import void
 from .operators import AND, OR, NEG, AxiomOp
 #  import libs.axiom.composed as composed
 #  from .composed import NaryAxiom
@@ -25,7 +27,6 @@ class Axiom:
     - TopAxiom, representing the axiom ⊤ (always True)
     - RemainderAxiom(ax), representing ax \ subaxes
 
-    # TODO Implement scoring functions
     # TODO Implement sampling methods
     # TODO Add a 'Axiom.is_open' method
     """
@@ -98,6 +99,29 @@ class Axiom:
             return self.components[0]
         return NaryAxiom(NEG, self)
 
+    def __hash__(self):
+        return hash(self.name)
+
+    def evaluate(self, mask, how="arithmetic"):
+        n = len(mask)
+        m = mask.sum()
+        cov = np.sum(mask & self.vec) / m
+        spe = np.sum(~mask & self.vec) / m
+
+        if how == "harmonic":
+            sco = 2 / (1/cov + 1/spe) if cov > 0 and spe > 0 else 0
+        elif how == "arithmetic":
+            sco = (cov + spe ) / 2
+        elif how == "xor":
+            sco = (m * cov + (n-m) * spe) / (n + m)
+        elif how == "prod":
+            sco = cov * spe
+        else:
+            raise ValueError("Unrecognized score function '{how}'. Valid values "
+                             "are 'harmonic', 'arithmetic', 'prod', 'xor'")
+
+        return cov, spe, sco
+
 
 class NaryAxiom(Axiom):
     """
@@ -147,3 +171,21 @@ class NaryAxiom(Axiom):
         Check if axiom `self` is verified by `entity` in the knowledge graph `graph`
         """
         return self.op.bfunc(*(ax.holds_for(entity, graph, **params) for ax in self.components))
+
+
+class RemainderAxiom(NaryAxiom):
+    """
+    Represent a RemainderAxiom for a taxonomic tree (maybe this should move to expressive/extractor ?)
+
+    TODO: implement a proper `holds_for` method
+    """
+    def __init__(self, base):
+        rem = AxiomOp("*", void, 1)
+        super().__init__(rem, base)
+
+    @property
+    def base(self):
+        return self.components[0]
+
+
+
