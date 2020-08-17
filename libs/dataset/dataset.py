@@ -2,6 +2,7 @@ import random
 from typing import Optional, Iterable, Tuple, Dict, List, Iterator, Set
 from collections import defaultdict, Counter
 
+from libs.utils.format import shorten_path
 from .io import load_dataset, save_dataset
 
 AxiomTuple = Tuple[str, str]
@@ -11,9 +12,10 @@ class Dataset:
     DBPEDIA_SMALL = "data/taxonomies/full_small/"
     DBPEDIA_FULL = "data/taxonomies/full_large/" #"data/full_flat_clusters/"
     REGISTERED_DATASETS = {
+        "toy": "data/dataset/toy/",
         "small": DBPEDIA_SMALL,
         "full": DBPEDIA_FULL,
-        "large": DBPEDIA_FULL # alias for 'full'
+        "large": DBPEDIA_FULL, # alias for 'full'
     }
     
     def __init__(self, indices: List[int], labels: List[int],
@@ -65,6 +67,13 @@ class Dataset:
             dirname = cls.REGISTERED_DATASETS[dirname]
         data = load_dataset(dirname)
         return cls(**data)
+
+    def __repr__(self):
+        if self.dirname is not None:
+            inner = shorten_path(self.dirname)
+        else:
+            inner = f"size={len(self)}, classes={self.n_classes}"
+        return f"{self.__class__.__name__}({inner})"
     
     def save(self, dirname):
         """Save dataset to a directory"""
