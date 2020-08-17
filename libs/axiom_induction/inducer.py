@@ -32,6 +32,7 @@ UNARY_OPS = {
     "neg": lambda a:~a,
     "identity": lambda a:a
 }
+
 BINARY_OPS = {
     "or": lambda a,b:a|b,
     "and": lambda a,b:a&b
