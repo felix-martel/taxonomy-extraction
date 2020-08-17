@@ -5,6 +5,9 @@ from typing import Callable, Dict, TypeVar
 T = TypeVar("T")
 
 
+def void(*args, **kwargs):
+    return
+
 def safe_divide(p, q):
     if q == 0: return 0.0
     return p / q
