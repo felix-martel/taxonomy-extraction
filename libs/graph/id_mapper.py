@@ -70,6 +70,12 @@ class IdMapper:
     
     def to_uri(self, idx):
         return self.idx[idx]
+
+    def to_uris(self, *ids):
+        return [self.to_uri(idx) for idx in ids]
+
+    def to_ids(self, *uris, insert_if_absent=False):
+        return [self.to_id(uri, insert_if_absent) for uri in uris]
     
     def to_id(self, uri, insert_if_absent=False):
         if insert_if_absent and uri not in self.uri:
