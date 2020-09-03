@@ -53,6 +53,15 @@ class Axiom:
     def __eq__(self, other):
         return self.name == other.name
 
+    def serialize(self):
+        # TODO: add a serialization/deserialization method (axiom to string)
+        pass
+
+    @classmethod
+    def deserialize(cls, data):
+        # TODO: deserialization (string to axiom)
+        pass
+
     @property
     def vec(self):
         return self._vec
