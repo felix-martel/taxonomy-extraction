@@ -3,9 +3,33 @@ Code for automatically extracting expressive and non-expressive taxonomies from 
 
 ![Overview of the taxonomy extraction method](https://github.com/felix-martel/taxonomy-extraction/raw/master/data/img/summary.png)
 
+**Non-expressive :**
 Starting from a knowledge graph KG and a set of entity-type pairs, (1) entities are embedded into a *d*-dimensional vector space (2) then they’re hierarchically clustered; (3) each type in the original dataset is then mapped to one of the cluster, (4) the taxonomy is extracted by removing non-selected clusters.
 
-For expressive taxonomy extraction, the algorithm starts from an axiom *A*, sample *n* entities verifying this axiom, and run a hierarchical clustering over them. The clusters are then labelled by expressive axioms using statistics on linked data, and a taxonomic tree *T(A)* is extracted. Then, *T(A)* is iteratively expanded by sampling new entities from the axioms in *T(A)* and adding the extracted subtrees to *T(A)*. 
+Two methods for mapping types to clusters: *Hard Mapping* and *Soft Mapping*. Hard Mapping computes an optimal, one-for-one injective mapping between types and clusters by solving a linear sum assignment problem (right now I'm using the [Kuhn-Munkres algorithm](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html) but I plan to implement a more efficient heuristic, such as [Asymmetric Greedy Search](https://link.springer.com/article/10.1007/s10878-015-9979-2)). Soft Mapping defines a mapping score between types and clusters, recursively computes a probability for each subsumption axiom, and performs a transitive reduction on the resulting DAG.
+
+*Preliminary Results*
+
+|             |          | direct |      |      | transitive |      |      |
+|-------------|----------|--------|------|------|------------|------|------|
+| Method      | Model    | cos    | euc  | eucw | cos        | euc  | eucw |
+| HardMapping | ComplEx  | 0,52   | 0,49 | 0,47 | 0,74       | 0,67 | 0,65 |
+|             | DistMult | 0,5    | 0,39 | 0,39 | 0,64       | 0,59 | 0,63 |
+|             | RDF2Vec  | 0,50   | 0,31 | 0,56 | 0,63       | 0,46 | 0,74 |
+|             | TransE   | 0,81   | 0,63 | 0,7  | **0,93**       | 0,76 | 0,8  |
+| SoftMapping | ComplEx  | 0,5    | 0,48 | 0,47 | 0,79       | 0,74 | 0,7  |
+|             | DistMult | 0,47   | 0,45 | 0,45 | 0,74       | 0,74 | 0,74 |
+|             | RDF2Vec  | 0,82   |      |      |            |      |      |
+|             | TransE   | **0,82**   | 0,69 | **0,77** | **0,93**       | **0,84** | **0,92** |
+| TIEmb       | ComplEx  | 0,38   | 0,4  |      | 0,37       | 0,48 |      |
+|             | DistMult | 0,26   | 0,39 |      | 0,27       | 0,47 |      |
+|             | RDF2Vec* | 0,81   | 0,73 |      | 0,57       | 0,42 |      |
+|             | TransE   | 0,74   | **0,76** |      | 0,86       | 0,79 |      |
+
+
+---
+
+**Expressive :** for expressive taxonomy extraction, the algorithm starts from an axiom *A*, sample *n* entities verifying this axiom, and run a hierarchical clustering over them. The clusters are then labelled by expressive axioms using statistics on linked data, and a taxonomic tree *T(A)* is extracted. Then, *T(A)* is iteratively expanded by sampling new entities from the axioms in *T(A)* and adding the extracted subtrees to *T(A)*. 
 
 
 The core code is contained in `libs`:
