@@ -82,8 +82,7 @@ class Cluster(Node):
             data = self.parent.data
         self.children: List["Cluster"]
         self.data = data
-        self.size = 1 if self.is_leaf else \
-            sum(map(attrgetter("size"), self.children))
+        self._size = None
         self._composition: Optional[Counter] = None
 
     def get_composition(self) -> Counter:
@@ -97,6 +96,13 @@ class Cluster(Node):
 
     def init_composition(self):
         self._composition = self.get_composition()
+
+    @property
+    def size(self):
+        if self._size is None:
+            s = 1 if self.is_leaf else sum(map(attrgetter("size"), self.children))
+            self._size = s
+        return self._size
 
     @property
     def composition(self) -> Counter:
