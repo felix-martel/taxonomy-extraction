@@ -7,18 +7,24 @@ from ..axiom import is_empty, EmptyAxiom
 
 
 class Inducer:
-    def __init__(self, A, B, graph, threshold=0.1, score="arithmetic", individuals=True, existential=True, concepts=True):
+    def __init__(self, Epos, Eneg, graph, threshold=0.1, score="arithmetic",
+                 individuals=True, existential=True, concepts=True, verbose=False):
         # TODO: reverse
-        self.axioms = extract_axioms([*A, *B], graph, threshold,
+        self.axioms = extract_axioms([*Epos, *Eneg], graph, threshold,
                                      individuals=individuals, existential=existential, concepts=concepts)
-        self.mask = np.concatenate([np.ones(len(A), dtype=bool), np.zeros(len(B), dtype=bool)])
-        self.n_entities = len(A) + len(B)
+        self.mask = np.concatenate([np.ones(len(Epos), dtype=bool), np.zeros(len(Eneg), dtype=bool)])
+        self.n_entities = len(Epos) + len(Eneg)
         self.score = score
+        self.verbose = verbose
 
     def __repr__(self):
         return f"Inducer(entities={self.n_entities}, axioms={len(self.axioms)})"
 
-    def generate_candidates(self, start, operators, allow_neg=True, forbidden=None):
+    def log(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
+
+    def generate_candidates(self, start, operators, allow_neg=DEFAULT_ALLOW_NEG, forbidden=None):
         if forbidden is None:
             forbidden = set()
 
@@ -45,10 +51,10 @@ class Inducer:
 
         ops = []
         if icov < cov_threshold:
-            print(f"Coverage too low ({icov:.2f}<{cov_threshold:.2f}). Adding OR clauses...")
+            self.log(f"Coverage too low ({icov:.2f}<{cov_threshold:.2f}). Adding OR clauses...")
             ops.append("or")
         if ispe < spe_threshold:
-            print(f"Specificity too low ({ispe:.2f}<{spe_threshold:.2f}). Adding AND clauses...")
+            self.log(f"Specificity too low ({ispe:.2f}<{spe_threshold:.2f}). Adding AND clauses...")
             ops.append("and")
 
         results = []
@@ -58,11 +64,11 @@ class Inducer:
             results.append(dict(axiom=ax, atom=at, cov=cov, spe=spe, sco=sco, gain=gain))
 
         # TODO : filter
-        print(f"...{len(results)} results found")
+        self.log(f"...{len(results)} results found")
         return results
 
     def find(self, max_axioms=3, min_gain=0.05, keep_n=5, forbidden=None, **kwargs):
-        print("Finding axioms")
+        self.log("Finding axioms")
         if forbidden is None:
             forbidden = set()
 
@@ -74,7 +80,7 @@ class Inducer:
 
         while step < max_axioms:
             new_axioms = []
-            print(f"\nStep {step}/{max_axioms}: {len(to_improve)} axioms to improve")
+            self.log(f"\nStep {step}/{max_axioms}: {len(to_improve)} axioms to improve")
             for axiom, excluded_axioms in to_improve:
                 res = self.improve(axiom, forbidden=excluded_axioms | forbidden, **kwargs)[:keep_n]
                 for rec in res:
