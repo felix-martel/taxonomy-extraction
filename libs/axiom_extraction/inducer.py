@@ -1,3 +1,19 @@
+"""
+Extract axioms from a set of positive examples (E+), a set of negative examples (E-) using a knowledge graph.
+Return a (possibly empty) list of axioms, such that each axiom is verified by most examples in E+ but almost none in E-
+Intended use:
+```
+from libs.graph import KnowledgeGraph
+
+kg = KnowledgeGraph.from_dir("some/graph/directory")
+Epos = kg.ent.to_ids("Baudelaire", "Louise Labé", "Gaston Miron", "Byron", "Ahmed Chawqi")
+Eneg = kg.ent.to_ids("Montréal", "Calgary", "Shanghai", "Toulon", "Gaborone")
+
+ind = Inducer(Epos, Eneg, kg)
+axioms = ind.find(threshold=0.9, min_gain=0.08)
+```
+"""
+import logging
 import operator
 import numpy as np
 
