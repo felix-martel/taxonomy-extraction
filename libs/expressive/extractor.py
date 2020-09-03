@@ -7,6 +7,14 @@ extractor.init()
 while not extractor.done:
     extractor.next()
 
+
+à faire :
+- mieux gérer les paramètres (genre base param et current params)
+- implement decreasing threshold
+- implement last step (locate the remaining named classes)
+- checkpointing
+- handle multi level extraction (pas prio)
+- pause and unpause algorithm? (not now)
 """
 import logging
 import sys
@@ -16,8 +24,8 @@ from collections import Counter
 from typing import List, Set, Iterable, Tuple, Optional
 
 from libs import embeddings
-#from libs.axiom_induction.inducer import Inducer
 from libs.axiom_extraction import Inducer as AxiomInducer
+from libs.taxonomy import Taxonomy
 from ..axiom import TopAxiom, RemainderAxiom, Axiom
 from ..tree import Node
 from ..utils import Timer, Params
@@ -48,7 +56,7 @@ class ExpressiveExtractor:
         # Mapping axiom --> depth
         self.depths = dict()
         # Short names of axioms
-        self.short_names = dict()
+        self.short_names = {root: root}
         # Number of searches for a given axiom
         self.n_searches = Counter()
         # Classes for which the search is done
@@ -124,6 +132,7 @@ class ExpressiveExtractor:
 
 
     def init(self):
+        # TODO: code from __init__ should probably move here, so that we could start a new extraction after calling init
         self.logger.debug("Initialisation started.")
         self.timer = Timer()
         self.E = embeddings.load(self.params.embeddings)
@@ -133,9 +142,18 @@ class ExpressiveExtractor:
         self.max_depth = self.params.max_depth
         self.logger.info("Initialisation done.")
 
+    def _shorten(self, axiom : Axiom) -> Axiom:
+        """
+        Return the short form of an axiom. If 'axiom' has no short form, return it untouched
+        """
+        return self.short_names.get(axiom, axiom)
 
-    def get_taxonomy(self):
-        pass
+    def get_taxonomy(self) -> Taxonomy:
+        """
+        Return the current shortened version of the extracted taxonomy
+        """
+        edges = [(self._shorten(x), self._shorten(y)) for x, y in self.T.to_edges()]
+        return Taxonomy.from_edges(edges)
 
     def get_start_axiom(self) -> Axiom:
         if self.params.sort_axioms:
@@ -186,7 +204,7 @@ class ExpressiveExtractor:
         found = set()
         rem = RemainderAxiom(parent)
 
-        self.logger.debug(f"Starting tree labelling for axiom {parent} over {clu.size} clusters.")
+        self.logger.debug(f"Starting tree labelling for axiom {self.short_names[parent]} over {clu.size} clusters.")
 
         unvisited = [clu.root]
         search_done = True
@@ -237,7 +255,7 @@ class ExpressiveExtractor:
         # (to which we'll attach newfound axioms)
         start = self.get_start_axiom()
         parent = start.base if isinstance(start, RemainderAxiom) else start
-        self.logger.info(f"STEP {self.n_clustering_steps}: starting with axiom {start}")
+        self.logger.info(f"STEP {self.n_clustering_steps}: starting with axiom {self.short_names[start]}")
 
         # TODO: check max. taxonomic depth
         if self.n_searches[parent] > self.params.halting.max_rec_steps:
@@ -257,9 +275,12 @@ class ExpressiveExtractor:
 
         # LABEL: Extract axioms from the clustering tree
         labels = self.label_tree(parent, clu)
-        self.T[parent].add_many(labels)
         self.used.update(labels)
-        self.unprocessed.extend(labels)
+        for axiom_short in labels:
+            axiom_long = parent & axiom_short
+            self.short_names[axiom_long] = axiom_short
+            self.T[parent].add(axiom_long)
+            self.unprocessed.append(axiom_long)
 
         return start, instances, clu, labels
 
