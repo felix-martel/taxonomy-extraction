@@ -106,6 +106,10 @@ class KnowledgeGraph:
                     yield h, t
             
     def dispatch_triple(self, triple, from_="auto", to_="id"):
+        # TODO: return proper exception for invalid input formats
+        if isinstance(triple, str):
+            h, r, t = triple.split(" ")
+            return self.dispatch_triple((h, r, t), from_="name")
         h, r, t = triple
         if from_ == "auto":
             from_ = "name" if isinstance(h, str) else "id"
