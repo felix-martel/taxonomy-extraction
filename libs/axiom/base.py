@@ -110,7 +110,7 @@ class Axiom:
         n = len(mask)
         m = mask.sum()
         cov = np.sum(mask & self.vec) / m
-        spe = np.sum(~mask & self.vec) / m
+        spe = 1 - np.sum(~mask & self.vec) / (n - m)
 
         if how == "harmonic":
             sco = 2 / (1/cov + 1/spe) if cov > 0 and spe > 0 else 0
