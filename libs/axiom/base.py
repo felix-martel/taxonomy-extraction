@@ -49,6 +49,10 @@ class Axiom:
     def __repr__(self):
         return f"{type(self).__name__}({self})"
 
+
+    def __eq__(self, other):
+        return self.name == other.name
+
     @property
     def vec(self):
         return self._vec
