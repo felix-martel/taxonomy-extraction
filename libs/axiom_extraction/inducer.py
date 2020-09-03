@@ -6,6 +6,8 @@ from .results import AxiomRecord, ResultDict
 from ..axiom import is_empty, EmptyAxiom
 
 
+DEFAULT_ALLOW_NEG = False
+
 class Inducer:
     def __init__(self, Epos, Eneg, graph, threshold=0.1, score="arithmetic",
                  individuals=True, existential=True, concepts=True, verbose=False):
@@ -37,8 +39,11 @@ class Inducer:
                 if allow_neg:
                     yield funcs[op](start, ~axiom), axiom
 
-    def improve(self, axiom, metric=None, threshold=0.85, cov_threshold=None, spe_threshold=None, allow_neg=True, forbidden=None):
-        print(f"Improving {axiom}...")
+    def improve(self, axiom, metric=None, threshold=0.85, cov_threshold=None, spe_threshold=None,
+                allow_neg=DEFAULT_ALLOW_NEG, forbidden=None, reverse=False):
+        mask = self.mask if not reverse else ~self.mask
+
+        self.log(f"Improving {axiom}...")
         if cov_threshold is None: cov_threshold = threshold
         if spe_threshold is None: spe_threshold = threshold
         if forbidden is None: forbidden = set()
@@ -47,7 +52,7 @@ class Inducer:
         if is_empty(axiom):
             icov, ispe, isco = 0, 0, 0
         else:
-            icov, ispe, isco = axiom.evaluate(self.mask, how=metric)
+            icov, ispe, isco = axiom.evaluate(mask, how=metric)
 
         ops = []
         if icov < cov_threshold:
@@ -59,7 +64,7 @@ class Inducer:
 
         results = []
         for ax, at in self.generate_candidates(axiom, ops, allow_neg=allow_neg, forbidden=forbidden):
-            cov, spe, sco = ax.evaluate(self.mask, how=metric)
+            cov, spe, sco = ax.evaluate(mask, how=metric)
             gain = sco - isco
             results.append(dict(axiom=ax, atom=at, cov=cov, spe=spe, sco=sco, gain=gain))
 
