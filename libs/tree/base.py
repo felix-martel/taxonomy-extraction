@@ -100,6 +100,13 @@ class Node(Generic[T]):
             return []
         return [node for node in self.parent.children if node != self]
 
+    def sibling(self):
+        siblings = self.siblings()
+        if len(siblings) == 1:
+            return siblings[0]
+        else:
+            raise ValueError(f"{self} has {len(siblings)} sibling(s), so calling self.sibling() is ambiguous")
+
     def to_edges(self) -> List[Tuple[T, T]]:
         """
         Return a list of `(child, parent)` tuples, each one representing an edge in the tree
