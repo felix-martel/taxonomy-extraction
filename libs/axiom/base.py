@@ -86,6 +86,9 @@ class Axiom:
             for component in self.components:
                 yield from component.atoms()
 
+    def holds_for(self, entity: int, graph, **params) -> bool:
+        raise NotImplementedError("Method 'holds_for' is not defined for generic axioms.")
+
     def __and__(self, other: Union["Axiom", np.ndarray]) -> Union["Axiom", np.ndarray]:
         if isinstance(other, np.ndarray):
             # Here we assume 'self.vec' is not None (Note to self: is there a use case for this?)
