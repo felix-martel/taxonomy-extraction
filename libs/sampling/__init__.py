@@ -6,4 +6,4 @@ graph that verify the axiom.
 """
 
 
-from .sampler import GraphSampler, NaiveGraphSampler
+from .sampler import GraphSampler, NaiveGraphSampler, Instances, Sampled

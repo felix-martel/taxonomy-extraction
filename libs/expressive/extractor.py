@@ -13,16 +13,17 @@ import sys
 import os
 import datetime as dt
 from collections import Counter
+from typing import List, Set, Iterable, Tuple, Optional
 
 from libs import embeddings
 #from libs.axiom_induction.inducer import Inducer
 from libs.axiom_extraction import Inducer as AxiomInducer
-from ..axiom import TopAxiom, RemainderAxiom
+from ..axiom import TopAxiom, RemainderAxiom, Axiom
 from ..tree import Node
 from ..utils import Timer, Params
 from ..dataset import create_from_instances as create_dataset
-from ..cluster import clusterize
-from ..sampling import GraphSampler
+from ..cluster import clusterize, Cluster
+from ..sampling import GraphSampler, Instances, Sampled
 
 
 import numpy as np
@@ -136,19 +137,19 @@ class ExpressiveExtractor:
     def get_taxonomy(self):
         pass
 
-    def get_start_axiom(self):
+    def get_start_axiom(self) -> Axiom:
         if self.params.sort_axioms:
             raise NotImplemented("'get_start_axiom' is not implemented yet when 'sort_axioms' is set to True")
         return self.unprocessed.pop(0)
 
-    def sample_from(self, axiom, size):
+    def sample_from(self, axiom : Axiom, size : int) -> Sampled:
         instances, size = self.sampler.sample(axiom, size)
         self.sizes[axiom] = size
 
         self.logger.debug(f"Sampled {len(instances)} instances out of {size} from concept {axiom}")
         return instances, size
 
-    def end_search_for(self, axiom, motive="UNK"):
+    def end_search_for(self, axiom : Axiom, motive : str = "UNK"):
         """
         End search for a given axiom (this axiom won't be used again for sampling/clustering)
         """
@@ -168,19 +169,22 @@ class ExpressiveExtractor:
 
         self.logger.debug(record)
 
-    def clusterize(self, instances):
+    def clusterize(self, instances : Iterable[int]) -> Cluster:
+        """
+        Run a hierarchical clustering algorithm over the embeddings of each entity in `instances`
+        :param instances: list of entity ids
+        :return: clustering tree (instance of `Cluster`)
+        """
         data = create_dataset(self.kg, instances)
         clu = clusterize(data, self.E, **self.params.clustering)
 
-        self.logger.debug(f"Clustering done over {len(instances)} embedding vectors. ")
+        self.logger.debug(f"Clustering done over {len(data)} embedding vectors. ")
         self.n_clustering_steps += 1
         return clu
 
-    def label_tree(self, parent, clu):
+    def label_tree(self, parent : Axiom, clu : Cluster) -> Set[Axiom]:
         found = set()
-        root = clu.root
         rem = RemainderAxiom(parent)
-        min_sco, max_sco = -float("inf"), float("inf")
 
         self.logger.debug(f"Starting tree labelling for axiom {parent} over {clu.size} clusters.")
 
@@ -219,7 +223,7 @@ class ExpressiveExtractor:
         self.logger.info(f"Subclasses found: " + ", ".join(str(x) for x in found))
         return found
 
-    def next(self):
+    def next(self) -> Tuple[Axiom, Instances, Optional[Cluster], Set[Axiom]]:
         """
         Run one loop of the algorithm, that is one cycle:
         - choose axiom A
@@ -238,7 +242,7 @@ class ExpressiveExtractor:
         # TODO: check max. taxonomic depth
         if self.n_searches[parent] > self.params.halting.max_rec_steps:
             self.end_search_for(parent, "MAX_DEPTH")
-            return
+            return start, set(), None, set()
 
         # SAMPLE: Sample instances from the chosen axiom
         instances, n = self.sample_from(start, self.params.size.size)
@@ -246,7 +250,7 @@ class ExpressiveExtractor:
         self.n_searches[parent] += 1
         if n < self.params.halting.min_size:
             self.end_search_for(parent, "MIN_SIZE")
-            return
+            return start, instances, None, set()
 
         # CLUSTER: Clusterize instances' embeddings
         clu = self.clusterize(instances)

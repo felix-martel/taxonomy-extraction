@@ -1,5 +1,5 @@
 import random
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Iterable
 
 from .dataset import Dataset
 from ..graph import KnowledgeGraph
@@ -29,7 +29,7 @@ def create_from_classes(graph: KnowledgeGraph, classes: List[str], class_size: U
     return Dataset(indices, labels, name2cls, cls2name, axioms=set())
 
 
-def create_from_instances(graph: KnowledgeGraph, instances: List[int], is_valid: Optional[bool] = None,
+def create_from_instances(graph: KnowledgeGraph, instances: Iterable[int], is_valid: Optional[bool] = None,
                           isa: str = "rdf:type") -> "Dataset":
     if is_valid is None:
         def is_valid(cls):
