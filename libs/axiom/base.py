@@ -186,7 +186,7 @@ class RemainderAxiom(NaryAxiom):
 
     TODO: implement a proper `holds_for` method
     """
-    def __init__(self, base):
+    def __init__(self, base : Axiom):
         rem = AxiomOp("*", void, 1)
         super().__init__(rem, base)
 
