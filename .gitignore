@@ -6,3 +6,5 @@ private/
 __pycache__
 data/dataset/
 *.pyc
+test.json
+results/taxonomy/
