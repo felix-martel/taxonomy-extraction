@@ -174,7 +174,15 @@ class ExpressiveExtractor:
             raise NotImplemented("'get_start_axiom' is not implemented yet when 'sort_axioms' is set to True")
         return self.unprocessed.pop(0)
 
+    def get_subclasses(self, axiom):
+        if axiom not in self.T:
+            return []
+        return [sub.id for sub in self.T[axiom].children]
+
     def sample_from(self, axiom : Axiom, size : int) -> Sampled:
+        if isinstance(axiom, RemainderAxiom):
+            subaxioms = self.get_subclasses(axiom.base)
+            axiom.set_subaxioms(subaxioms)
         instances, size = self.sampler.sample(axiom, size)
         self.sizes[axiom] = size
 
