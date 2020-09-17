@@ -1,10 +1,8 @@
 import numpy as np
 from typing import Union, Iterable, Generator
 
-from libs.utils.misc import void
 from .operators import AND, OR, NEG, REM, AxiomOp
-#  import libs.axiom.composed as composed
-#  from .composed import NaryAxiom
+
 
 class Axiom:
     """
@@ -49,7 +47,6 @@ class Axiom:
     def __repr__(self):
         return f"{type(self).__name__}({self})"
 
-
     def __eq__(self, other):
         return self.name == other.name
 
@@ -86,7 +83,7 @@ class Axiom:
             return None
 
     def clear_memory(self) -> None:
-        self.vec = None
+        self._vec = None
 
     def atoms(self) -> Generator["Axiom", None, None]:
         if self.is_atomic:
@@ -127,7 +124,7 @@ class Axiom:
         if how == "harmonic":
             sco = 2 / (1/cov + 1/spe) if cov > 0 and spe > 0 else 0
         elif how == "arithmetic":
-            sco = (cov + spe ) / 2
+            sco = (cov + spe) / 2
         elif how == "xor":
             sco = (m * cov + (n-m) * spe) / (n + m)
         elif how == "prod":
@@ -231,8 +228,7 @@ class RemainderAxiom(NaryAxiom):
 
     Entities from a RemainderAxiom can be properly sampled once all subaxioms have been added.
     """
-    def __init__(self, base : Axiom, *subaxioms : Axiom):
-        #rem = AxiomOp("*", void, 1)
+    def __init__(self, base: Axiom, *subaxioms: Axiom):
         super().__init__(REM, base, *subaxioms)
 
     @property
@@ -250,5 +246,3 @@ class RemainderAxiom(NaryAxiom):
     def set_subaxioms(self, subaxioms):
         """Set subaxioms B1, ..., Bk (removing existing subaxioms"""
         self.components = [self.base, *subaxioms]
-
-
