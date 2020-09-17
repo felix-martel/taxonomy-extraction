@@ -267,7 +267,7 @@ class ExpressiveExtractor:
                 continue
 
             E_pos, E_neg = [list(c.items()) for c in node.children]
-            inducer = AxiomInducer(E_pos, E_neg, self.kg)
+            inducer = AxiomInducer(E_pos, E_neg, self.kg, **self.params.patterns)
             for c, reverse in zip(node.children, [False, True]):
                 if c.size < self.params.halting.min_size or c.depth >= self.params.max_depth:
                     search_done = False
@@ -327,7 +327,7 @@ class ExpressiveExtractor:
             return start, set(), None, set()
 
         # SAMPLE: Sample instances from the chosen axiom
-        instances, n = self.sample_from(start, self.params.size.size)
+        instances, n = self.sample_from(start, self.params.size)
 
         self.n_searches[parent] += 1
         if n < self.params.halting.min_size:
