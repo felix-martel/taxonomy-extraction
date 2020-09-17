@@ -10,7 +10,6 @@ while not extractor.done:
 
 à faire :
 - mieux gérer les paramètres (genre base param et current params)
-- implement decreasing threshold
 - implement last step (locate the remaining named classes)
 - checkpointing
 - handle multi level extraction (pas prio)
@@ -40,25 +39,27 @@ class ExpressiveExtractor:
         self.params = self.init_params(params)
         self.name = self.params.record.taxname
 
-        root = TopAxiom
-
-        self.unprocessed = [root]
-        self.T = Node(root)
-        self.used = {root}
+        # Axiom Queue (named AT in my thesis)
+        self.unprocessed = None
+        # Current Extracted Taxonomy
+        self.T = None
+        # List of Used Atomic Axioms (since they should only appear once in the taxonomy)
+        self.used = None
         # Mapping axiom --> score
-        self.scores = {root: 1.0}
+        self.scores = None
         # Mapping axiom --> number of entities verifying the axiom
-        self.sizes = {root: len(self.kg.ent)}
+        self.sizes = None
         # Mapping axiom --> depth
-        self.depths = dict()
+        self.depths = None
         # Short names of axioms
-        self.short_names = {root: root}
+        self.short_names = None
         # Number of searches for a given axiom
-        self.n_searches = Counter()
+        self.n_searches = None
         # Classes for which the search is done
-        self.done_classes = set()
-
+        self.done_classes = None
+        # Embedding Matrix
         self.E = None
+        # Axiom Sampler
         self.sampler = GraphSampler(self.kg) if sampler is None else sampler
 
         self.timer = None
@@ -145,10 +146,36 @@ class ExpressiveExtractor:
         start = dt.datetime.fromtimestamp(self.timer._start)
         return f"{start:%H:%M:%S}"
 
+    def init_containers(self, root : Axiom):
+        """
+        Reset the different containers used to store extracted axioms
+
+        In most cases, root should be `TopAxiom`, but one can use another one to extract a partial taxonomy of given
+        root.
+        """
+        self.unprocessed = [root]
+        self.T = Node(root)
+        self.used = {root}
+        # Mapping axiom --> score
+        self.scores = {root: 1.0}
+        # Mapping axiom --> number of entities verifying the axiom
+        self.sizes = {root: len(self.kg.ent)}
+        # Mapping axiom --> depth
+        self.depths = dict()
+        # Short names of axioms
+        self.short_names = {root: root}
+        # Number of searches for a given axiom
+        self.n_searches = Counter()
+        # Classes for which the search is done
+        self.done_classes = set()
+
     def init(self):
         # TODO: code from __init__ should probably move here, so that we could start a new extraction after calling init
         self.logger.debug("Initialisation started.")
         self.timer = Timer()
+
+        self.init_containers(TopAxiom)
+
         self.E = embeddings.load(self.params.embeddings)
         self.logger.debug(f"Embeddings loaded, matrix shape is {self.E.shape}")
 
