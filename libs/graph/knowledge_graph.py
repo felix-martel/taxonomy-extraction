@@ -6,6 +6,7 @@ import os
 from libs.const import TOY_GRAPH
 from .io import iter_training_files, get_item_number, split_line, FILES
 from .id_mapper import IdMapper
+from .register import register, deregister, get_registered
 from collections import defaultdict
 from tqdm import tqdm
 
@@ -38,7 +39,7 @@ class KnowledgeGraph:
         "toy": "data/graph/toy",
     }
 
-    def __init__(self, entities=None, relations=None):
+    def __init__(self, entities=None, relations=None, dirname=None):
         self._h = DoubleDict()
         self._r = DoubleDict()
         self._t = DoubleDict()
@@ -47,6 +48,7 @@ class KnowledgeGraph:
         self.rel = relations if relations is not None else IdMapper
         
         self.n_triples = 0
+        self.dirname = dirname
             
     def add(self, h, r, t):
         self._h[h][r].add(t)
@@ -147,29 +149,33 @@ class KnowledgeGraph:
         return [os.path.join(d, cls.files[t]) for t in ["train", "test", "val"]]
         
     @classmethod
-    def from_dir(cls, d, max_triples=float("inf"), verbose=True, exclude_entities=None, exclude_relations=None,
-                 remove_invalid_types=False):
-        if d in cls.registered:
-            d = cls.registered[d]
+    def from_dir(cls, name, max_triples=float("inf"), verbose=True, exclude_entities=None, exclude_relations=None,
+                 remove_invalid_types=False, lightweight=True):
+        dirname = get_registered(name)
         if exclude_relations is None:
             exclude_relations = set()
         if exclude_entities is None:
             exclude_entities = set()
-        ent = IdMapper.from_file(os.path.join(d, cls.files["ent"]), verbose=False)
-        rel = IdMapper.from_file(os.path.join(d, cls.files["rel"]), verbose=False)
-        kg = KnowledgeGraph(ent, rel)
+        if lightweight:
+            exclude_relations |= {"rdfs:label", "foaf:name", "dcterms:description"}
+            remove_invalid_types = True
+        ent = IdMapper.from_file(os.path.join(dirname, cls.files["ent"]), verbose=False)
+        rel = IdMapper.from_file(os.path.join(dirname, cls.files["rel"]), verbose=False)
+        kg = cls(ent, rel, dirname=dirname)
         
-        if remove_invalid_types:
-            def is_valid(t):
-                name = ent.to_name(t)
-                return t == "owl:Thing" or (name.startswith("dbo:") and ":Wikidata" not in name)
-        exclude_relations = {rel.to_id(r) for r in exclude_relations}
-        exclude_entities = {ent.to_id(e) for e in exclude_entities}
+        def is_valid(t):
+            name = ent.to_name(t)
+            return t == "owl:Thing" or (name.startswith("dbo:") and ":Wikidata" not in name)
+        exclude_relations = {rel.to_id(r) for r in exclude_relations if r in rel}
+        exclude_entities = {ent.to_id(e) for e in exclude_entities if e in ent}
         isaid = rel.to_id("rdf:type")
         
         n_triples = 0
-        expected_n_triples = min(max_triples, get_item_number(cls.triple_files(d)))
-        for h, r, t, _ in tqdm(iter_training_files(cls.triple_files(d)), total=expected_n_triples, disable=not verbose, desc="Triples"):
+        expected_n_triples = min(max_triples, get_item_number(cls.triple_files(dirname)))
+        for h, r, t, _ in tqdm(iter_training_files(cls.triple_files(dirname)),
+                               total=expected_n_triples,
+                               disable=not verbose,
+                               desc="Triples"):
             if h in exclude_entities or t in exclude_entities or r in exclude_relations:
                 continue
             if r == isaid and remove_invalid_types and not is_valid(t):
@@ -189,12 +195,12 @@ class KnowledgeGraph:
             kg.add_uris(*triple)
         return kg
         
-    def to_dir(self, d, test_split=0.1, val_split=0.1):
+    def to_dir(self, dirname, test_split=0.1, val_split=0.1):
         train, test, val = [], [], []
         train_split = 1 - (test_split + val_split)
         
-        if not os.path.exists(d):
-            os.makedirs(d)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
             
         for h, r, t in self:
             triple = (h, t, r)
@@ -210,10 +216,12 @@ class KnowledgeGraph:
             ["ent", "rel", "train", "test", "val"], 
             [self.ent, self.rel, train, test, val]
         ):
-            with open(d + self.files[n], "w") as f:
+            with open(os.path.join(dirname, self.files[n]), "w", encoding="utf8") as f:
                 print(len(im), file=f)
                 for item in im:
                     print(*item, file=f)
+        if self.dirname is None:
+            self.dirname = dirname
 
     @classmethod
     def _find(cls, q, db):
@@ -232,6 +240,13 @@ class KnowledgeGraph:
     
     def contains(self, h, r, t):
         return h in self._h and r in self._h[h] and t in self._h[h][r]
+
+    def register(self, name, dirname=None):
+        if self.dirname is None and dirname is None:
+            raise ValueError("Can't register a knowledge graph without a dirname. Please provide the directory name "
+                             "to register with parameter 'dirname'.")
+        dirname = self.dirname if dirname is None else dirname
+        register(name, dirname)
     
     def print_relations(self, name=None, idx=None):
         if name is not None:
