@@ -6,7 +6,7 @@ extractor.init()
 
 while not extractor.done:
     extractor.next()
-
+```
 
 à faire :
 - mieux gérer les paramètres (genre base param et current params)
@@ -33,10 +33,6 @@ from ..dataset import create_from_instances as create_dataset
 from ..cluster import clusterize, Cluster
 from ..sampling import GraphSampler, Instances, Sampled
 
-
-import numpy as np
-
-#logging.basicConfig()
 
 class ExpressiveExtractor:
     def __init__(self, graph, params, sampler=None, verbose=logging.INFO):
@@ -76,10 +72,16 @@ class ExpressiveExtractor:
     def done(self):
         """
         True iff the expressive taxonomy extraction is done
-        TODO: for now, we only consider the non-adaptative case, ie we're done when the 'unprocessed' queue is empty
+        TODO: include the 'wrap-up' final round?
         """
         return not self.unprocessed
 
+        return False
+
+    @property
+    def extracted_classes(self):
+        """Return all extracted axioms (in their long form)"""
+        return self.short_names.keys()
 
     @property
     def status(self):
@@ -129,7 +131,6 @@ class ExpressiveExtractor:
             return "not started"
         start = dt.datetime.fromtimestamp(self.timer._start)
         return f"{start:%H:%M:%S}"
-
 
     def init(self):
         # TODO: code from __init__ should probably move here, so that we could start a new extraction after calling init
@@ -204,7 +205,7 @@ class ExpressiveExtractor:
         found = set()
         rem = RemainderAxiom(parent)
 
-        self.logger.debug(f"Starting tree labelling for axiom {self.short_names[parent]} over {clu.size} clusters.")
+        self.logger.debug(f"Starting tree labelling for axiom {self._shorten(parent)} over {clu.size} clusters.")
 
         unvisited = [clu.root]
         search_done = True
@@ -241,6 +242,20 @@ class ExpressiveExtractor:
         self.logger.info(f"Subclasses found: " + ", ".join(str(x) for x in found))
         return found
 
+    def checkpoint(self):
+        """
+        Checkpointing function. Save current taxonomy and parameter values.
+
+        TODO:
+        Checkpointing should:
+        - save the current taxonomy in an HTML file
+        - save the list of axiom
+        - save current parameters' values
+        - (optional) evaluate the current taxonomy, e.g. when we restrict the search to named classes
+        - (long-term) save state, so that the extraction process could be resumed later
+        """
+        pass
+
     def next(self) -> Tuple[Axiom, Instances, Optional[Cluster], Set[Axiom]]:
         """
         Run one loop of the algorithm, that is one cycle:
@@ -248,14 +263,15 @@ class ExpressiveExtractor:
         - sample entities from A
         - clusterize these entities
         - label the clustering tree with new axioms B1, B2, ..., Bk
-        - add Bis to the clustering tree
+        - add B1, ..., Bk to the clustering tree
         :return:
         """
         # CHOOSE: Here, start is the start axiom A (from which we'll sample entities) and parent is the parent axiom
-        # (to which we'll attach newfound axioms)
+        # (to which we'll attach newfound axioms). The distinction between start and parent is only useful for
+        # remainder axioms.
         start = self.get_start_axiom()
         parent = start.base if isinstance(start, RemainderAxiom) else start
-        self.logger.info(f"STEP {self.n_clustering_steps}: starting with axiom {self.short_names[start]}")
+        self.logger.info(f"STEP {self.n_clustering_steps}: starting with axiom {self._shorten(start)}")
 
         # TODO: check max. taxonomic depth
         if self.n_searches[parent] > self.params.halting.max_rec_steps:
@@ -275,14 +291,17 @@ class ExpressiveExtractor:
 
         # LABEL: Extract axioms from the clustering tree
         labels = self.label_tree(parent, clu)
-        self.used.update(labels)
-        for axiom_short in labels:
-            axiom_long = parent & axiom_short
-            self.short_names[axiom_long] = axiom_short
-            self.T[parent].add(axiom_long)
-            self.unprocessed.append(axiom_long)
+        for axiom in labels:
+            self.register_axiom(axiom, parent)
 
         return start, instances, clu, labels
+
+    def register_axiom(self, axiom, parent):
+        axiom_long = parent & axiom
+        self.used.add(axiom)
+        self.short_names[axiom_long] = axiom
+        self.T[parent].add(axiom_long)
+        self.unprocessed.append(axiom_long)
 
     def run(self, n_runs=None):
         while not self.done and (n_runs is None or n_runs > 0):
