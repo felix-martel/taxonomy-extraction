@@ -74,7 +74,20 @@ class ExpressiveExtractor:
         True iff the expressive taxonomy extraction is done
         TODO: include the 'wrap-up' final round?
         """
-        return not self.unprocessed
+        empty_queue = not bool(self.unprocessed)
+        params = self.params.threshold
+        if self.n_clustering_steps > self.params.halting.max_clustering_steps:
+            self.logger.info(f"Max. number of clustering steps reached (N={self.params.halting.max_clustering_steps})")
+            return True
+
+        if empty_queue and (params.adaptative and params.current >= params.min + params.step):
+            params.current -= params.step
+            if params.current < params.expressive:
+                # Switch to named classes only
+                self.params.patterns.individuals = False
+                self.params.patterns.existential = False
+                self.params.max_axioms = 1
+            self.unprocessed = [RemainderAxiom(ax) for ax in self.extracted_classes - self.done_classes]
 
         return False
 
@@ -225,7 +238,7 @@ class ExpressiveExtractor:
                     search_done = False
                     self.logger.debug(f"Search stop for cluster {c} (size too low or max depth reached)")
                     continue
-                axioms = inducer.find(reverse=reverse, forbidden=self.used)
+                axioms = inducer.find(reverse=reverse, forbidden=self.used, threshold=self.params.threshold.current)
                 label = axioms.best()
                 if label is not None:
                     # 'label' has type 'AxiomRecord'
