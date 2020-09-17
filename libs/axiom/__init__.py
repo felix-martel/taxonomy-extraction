@@ -4,7 +4,7 @@
 
 from .base import Axiom, NaryAxiom, RemainderAxiom
 from .atomic import AtomicAxiom, TopAxiom, EmptyAxiom, Concept, Existential
-from .operators import AND, OR, NEG, AxiomOp
+from .operators import AND, OR, NEG, REM, AxiomOp
 
 
 def is_atomic(axiom):

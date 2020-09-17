@@ -2,7 +2,7 @@ import numpy as np
 from typing import Union, Iterable, Generator
 
 from libs.utils.misc import void
-from .operators import AND, OR, NEG, AxiomOp
+from .operators import AND, OR, NEG, REM, AxiomOp
 #  import libs.axiom.composed as composed
 #  from .composed import NaryAxiom
 
@@ -133,7 +133,7 @@ class Axiom:
         elif how == "prod":
             sco = cov * spe
         else:
-            raise ValueError("Unrecognized score function '{how}'. Valid values "
+            raise ValueError(f"Unrecognized score function '{how}'. Valid values "
                              "are 'harmonic', 'arithmetic', 'prod', 'xor'")
 
         return cov, spe, sco
@@ -148,7 +148,7 @@ class NaryAxiom(Axiom):
     """
     def __init__(self, op: AxiomOp, *axioms: Axiom):
         axioms = list(axioms)
-        if len(axioms) != op.arity:
+        if len(axioms) != op.arity and op.arity != -1:
             raise ValueError(f"Expected {op.arity} axioms, found {len(axioms)}")
         super().__init__("", None, components=axioms)
         self.op = op
@@ -162,6 +162,8 @@ class NaryAxiom(Axiom):
 
     @property
     def name(self):
+        if callable(self.op.symbol):
+            return self.op.symbol(*self.components)
         if self.op.arity == 1:
             component = self.components[0]
             name = component.name
@@ -193,15 +195,36 @@ class RemainderAxiom(NaryAxiom):
     """
     Represent a RemainderAxiom for a taxonomic tree (maybe this should move to expressive/extractor ?)
 
-    TODO: implement a proper `holds_for` method
+    A RemainderAxiom is a special axiom *a meaning: "instances from 'a' that don't belong to known subclasses of 'a'".
+    See Section 5.2.2 and especially Equation 5.3 of my thesis for details. A RemainderAxiom is thus composed of
+    a base axiom A and k sub-axioms B1, B2, ... Bk (representing the 'known subclasses' of A). Its logical meaning
+    can be written as:
+    A and not (B1 or B2 or ... or Bk)
+
+    The sub-axioms B1, ..., Bk can change over time, and the RemainderAxiom cannot know the current known classes. Thus,
+    they must be added manually before any sampling takes place. Two methods are provided: `RemainderAxiom.add` (for
+    adding one subaxiom) and `RemainderAxiom.update` (for adding several subaxioms).
+
+    Entities from a RemainderAxiom can be properly sampled once all subaxioms have been added.
     """
-    def __init__(self, base : Axiom):
-        rem = AxiomOp("*", void, 1)
-        super().__init__(rem, base)
+    def __init__(self, base : Axiom, *subaxioms : Axiom):
+        #rem = AxiomOp("*", void, 1)
+        super().__init__(REM, base, *subaxioms)
 
     @property
     def base(self):
         return self.components[0]
 
+    def add(self, subaxiom):
+        """Add a new subaxiom B to the RemainderAxiom"""
+        self.components.append(subaxiom)
+
+    def update(self, subaxioms):
+        """Add multiple subaxioms B1, ..., Bk to the RemainderAxiom"""
+        self.components.extend(subaxioms)
+
+    def set_subaxioms(self, subaxioms):
+        """Set subaxioms B1, ..., Bk (removing existing subaxioms"""
+        self.components = [self.base, *subaxioms]
 
 
