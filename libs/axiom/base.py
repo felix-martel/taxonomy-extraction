@@ -20,12 +20,12 @@ class Axiom:
     Axioms can be combined, using conjunctions, disjunctions and negations.
     An axiom is either:
     - an atomic axiom (such that C, ∃R.C, ∃R.{v}, ⊤...)
-    - a combination of axioms, given by an operation `op` with arity `k`, and `k` axioms
+    - a combination of axioms, given by an operation `op` with arity `k`, and `k` axioms. -1 indicates a varying arity
 
     Special axioms include:
     - EmptyAxiom, an uninitialised axiom (used for the "axiom improvement" step)
     - TopAxiom, representing the axiom ⊤ (always True)
-    - RemainderAxiom(ax), representing ax \ subaxes
+    - RemainderAxiom(ax), representing ax \ subaxes, see the corresponding class
 
     # TODO Implement sampling methods
     # TODO Add a 'Axiom.is_open' method
@@ -142,9 +142,33 @@ class Axiom:
 class NaryAxiom(Axiom):
     """
     Represent a N-ary axiom, that is the combination of N axioms by a N-ary operator.
-    A `NaryAxiom` is defined by an operator `op` with arity $N$ (*e.g* NEG with arity 1, AND, OR with arity 2), and
-    $N$ axioms $\alpha_1, \alpha_2, \ldots \alpha_N$. Then, the NaryAxiom is simply:
-    $$\alpha_\text{n-ary} = op(\alpha_1, \ldots, \alpha_k)$$
+
+    The N axioms are stored into the `components` array, and combined using an operator `op`. Some operators are defined
+    in `libs.axiom`, such as NEG (negation), OR (disjunction), AND (conjunction), REM (remainder, see `RemainderAxiom`).
+
+    An operator `op` from class `libs.axiom.operators.AxiomOp` defines 3 functions that indicate how to build the axiom
+    from its components: `func`, `bfunc` ('b' for 'boolean'), `sfunc` ('s' for 'set'). Let A be a k-ary axiom, and
+    B1, ..., Bk its components (each Bi is instance of class `Axiom`). Let e be an entity from the graph. We write A(e)
+    if axiom A holds for the entity e, E(A) for the set of entities that verify A, and V(A) the boolean vector such
+    that V(A)_i = 1 if A holds for e_i, 0 otherwise. Then:
+
+    - `bfunc` indicates how to compute A(e) from B1(e), ..., Bk(e) :
+    A(e) = bfunc(B1(e), B2(e), ..., Bk(e))
+    It is used in method `holds_for`
+
+    - `sfunc` indicates how to compute E(A) from E(B1), ..., E(Bk) :
+    E(A) = sfunc(E(B1), E(B2), ..., E(Bk))
+    It is used for sampling items, e.g in the `libs.sampling.GraphSampler` class
+
+    - `func` indicates how to compute V(A) from V(B1), ..., V(Bk) :
+    V(A) = sfunc(V(B1), V(B2), ..., V(Bk))
+    It is used in property `vec`
+
+    Example: for the operator AND, `bfunc` is the standard AND operator (lambda x,y: x and y), `func` is the elementwise
+    AND operator (numpy.logical_and), and `sfunc` is the set intersection (lambda A, B: A & B).
+
+    New operators can be added or created on-the-fly. By default, `func`=`bfunc`=`sfunc`, but you can provide custom
+    functions for each, as well as a custom naming scheme.
     """
     def __init__(self, op: AxiomOp, *axioms: Axiom):
         axioms = list(axioms)
