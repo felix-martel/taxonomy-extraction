@@ -33,16 +33,18 @@ class Concept(AtomicAxiom):
     """
     rel = str(Rel.IS_A)
 
-    def __init__(self, concept=None, singleton=None):
-        if concept is None and singleton is None:
+    def __init__(self, concept=None, singleton=None, top=False):
+        if concept is None and singleton is None and not top:
             raise ValueError("You must specify at least one of 'concept' or 'singleton'")
+        elif (concept is not None or singleton is not None) and top:
+            raise ValueError("You cannot provide a 'concept' or 'singleton' for top axiom")
         else:
-            name = concept if concept is not None else "{" + singleton + "}"
+            name = concept if concept is not None else "{" + singleton + "}" if singleton is not None else str(Sym.TOP)
         super().__init__(name)
         self.rel = "rdf:type"
-        self.concept = concept if concept is not None else singleton
-        self.is_singleton = concept is None
-        self.is_top = False
+        self.concept = name # concept if concept is not None else singleton if singleton is not None else str(Sym.TOP)
+        self.is_singleton = singleton is not None
+        self.is_top = top
         self.A = None
         self.i = None
 
@@ -71,8 +73,7 @@ class Concept(AtomicAxiom):
         return (entity, r, c) in graph
 
 
-TopAxiom = Concept(str(Sym.TOP))
-TopAxiom.is_top = True
+TopAxiom = Concept(top=True)
 
 
 class Existential(AtomicAxiom):
