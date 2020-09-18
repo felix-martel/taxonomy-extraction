@@ -24,9 +24,6 @@ class Axiom:
     - EmptyAxiom, an uninitialised axiom (used for the "axiom improvement" step)
     - TopAxiom, representing the axiom ⊤ (always True)
     - RemainderAxiom(ax), representing ax \ subaxes, see the corresponding class
-
-    # TODO Implement sampling methods
-    # TODO Add a 'Axiom.is_open' method
     """
     def __init__(self, name: str,
                  vec: Union[None, np.ndarray] = None,
