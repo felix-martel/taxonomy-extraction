@@ -287,6 +287,15 @@ class KnowledgeGraph:
 
     def is_id(self, e):
         return isinstance(e, int)
+
+    def heads(self, *args, **kwargs):
+        return [h for h, r, t in self.find_triples(*args, **kwargs)]
+
+    def tails(self, *args, **kwargs):
+        return [t for h, r, t in self.find_triples(*args, **kwargs)]
+
+    def relations(self, *args, **kwargs):
+        return [r for h, r, t in self.find_triples(*args, **kwargs)]
     
     def find_triples(self, h=None, r=None, t=None, as_string=False, max_results=None):
         H = self.ent.to_id(h) if self.is_uri(h) else h
