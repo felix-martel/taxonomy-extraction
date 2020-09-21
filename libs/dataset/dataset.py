@@ -3,6 +3,7 @@ from typing import Optional, Iterable, Tuple, Dict, List, Iterator, Set
 from collections import defaultdict, Counter
 
 from libs.utils.format import shorten_path
+from libs.utils.resources import get_registered, register_resource
 from .io import load_dataset, save_dataset
 
 AxiomTuple = Tuple[str, str]
@@ -63,10 +64,18 @@ class Dataset:
     @classmethod
     def load(cls, dirname) -> "Dataset":
         """Load dataset for a directory"""
-        if dirname in cls.REGISTERED_DATASETS:
-            dirname = cls.REGISTERED_DATASETS[dirname]
+        dirname = get_registered(dirname, "dataset")
         data = load_dataset(dirname)
         return cls(**data)
+
+    def register(self, name, dirname=None):
+        """Register the dataset in 'resources.json'"""
+        if self.dirname is None:
+            self.dirname = dirname
+        if self.dirname is None:
+            raise ValueError("Datasets can't be registered if their `dirname` in unset. Please set a value to the "
+                             "`dirname` attribute before calling `register()`.")
+        register_resource(name, self.dirname, "dataset")
 
     def __repr__(self):
         if self.dirname is not None:
@@ -77,6 +86,7 @@ class Dataset:
     
     def save(self, dirname):
         """Save dataset to a directory"""
+        self.dirname = dirname
         save_dataset(self, dirname)
 
     def __iter__(self) -> Iterator:
