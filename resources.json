@@ -1,5 +1,12 @@
 {
     "graph": {
         "toy": "data/graph/toy"
+    },
+    "embeddings": {
+        "default": "toy",
+        "toy": "data/embeddings/toy/ent_embeddings.npy"
+    },
+    "dataset": {
+        "toy": "data/dataset/toy"
     }
 }
