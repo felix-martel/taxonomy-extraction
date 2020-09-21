@@ -152,8 +152,10 @@ class Node(Generic[T]):
         return edges
 
     @classmethod
-    def write_edge_list(cls, edges: Iterable[Tuple[T, T]], file: TextIO):
+    def write_edge_list(cls, edges: Iterable[Tuple[T, T]], file: TextIO, preprocess: Optional[Callable[[T], str]] = None):
         for edge in edges:
+            if preprocess is not None:
+                edge = preprocess(edge[0]), preprocess(edge[1])
             print(*edge, file=file)
 
     @classmethod
