@@ -364,13 +364,14 @@ class Node(Generic[T]):
         """
         self.print(start, max_depth, nameattr=func, **kwargs)
 
-    def plot(self, max_depth: Optional[int] = 4, max_width: Optional[int] = 7, custom_label=None, **params):
+    def plot(self, max_depth: Optional[int] = 4, max_width: Optional[int] = 7, custom_label=None,
+             step_x=1., step_y=-0.2, **params):
         """
         Plot a tree using matplotlib and `libs.viz.nary_tree` module
         """
         if custom_label is None:
             custom_label = "name"
-        coords, edges = treeplot.get_coords(self, max_depth=max_depth, max_width=max_width)
+        coords, edges = treeplot.get_coords(self, step_x=step_x, step_y=step_y, max_depth=max_depth, max_width=max_width)
         treeplot.plot_tree(coords, edges, labels=custom_label, **params)
 
     def _build_at_depth(self: TNode) -> Dict[int, List[TNode]]:
