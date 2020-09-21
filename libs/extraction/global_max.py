@@ -1,7 +1,7 @@
 import os
 
 from scipy.optimize import linear_sum_assignment
-from libs.timer import Timer
+from libs.utils import Timer
 from libs.metrics import f_score
 import numpy as np
 
