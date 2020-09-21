@@ -293,6 +293,8 @@ class Node(Generic[T]):
         """
         if base_node is None:
             base_node = self
+        else:
+            base_node = self[base_node]
         base_node.parent.children.remove(base_node)
         base_node.parent = None
         base_node.depth = 0
