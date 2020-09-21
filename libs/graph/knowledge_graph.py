@@ -74,10 +74,10 @@ class KnowledgeGraph:
             self.ent_to_str(t)
         ])
         
-    def add_uris(self, h, r, t):
-        h = get_identifier(h)
-        t = get_identifier(t)
-        
+    def add_uris(self, h, r, t, shorten=False):
+        h = get_identifier(h, shorten=shorten)
+        t = get_identifier(t, shorten=shorten)
+        r = get_identifier(r, shorten=shorten)
         h = self.ent.to_id(h, insert_if_absent=True)
         t = self.ent.to_id(t, insert_if_absent=True)
         r = self.rel.to_id(r, insert_if_absent=True)
@@ -134,11 +134,13 @@ class KnowledgeGraph:
 
         
     @classmethod
-    def build_from_ttl(cls, files):
+    def build_from_ttl(cls, *files, shorten=False):
+        if len(files) == 1 and isinstance(files[0], list):
+            files = files[0]
         kg = KnowledgeGraph()
         
         for h, r, t, _ in iter_files(files):
-            kg.add_uris(h, r, t)
+            kg.add_uris(h, r, t, shorten=shorten)
         return kg
     
     def to_file(cls, path):
