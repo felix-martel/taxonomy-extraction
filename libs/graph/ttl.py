@@ -1,4 +1,5 @@
 import re
+from .uri import PREFIXES
 
 URL_PATTERN = re.compile("^<(?P<prefix>https?://.+/(.*#)?)(?P<uri>.*)>$")
 STR_PATTERN = re.compile('^"(?P<value>.*?)"@(?P<lang>.*)$')
@@ -26,7 +27,7 @@ def split_line(l):
     t = " ".join(a[2:-1])
     return h, r, t
     
-def get_identifier(s):
+def get_identifier(s, shorten=False):
     if re.search(RAW_STR_PATTERN, s):
         return "<STRING>"
     m = re.search(STR_PATTERN, s)
@@ -35,6 +36,12 @@ def get_identifier(s):
     m = re.search(VAR_PATTERN, s)
     if m:
         return m.group("formt")
+    if shorten:
+        m = re.search(URL_PATTERN, s)
+        if m:
+            pref = m.group("prefix")
+            if pref in PREFIXES.longs:
+                return PREFIXES.to_short(pref) + ":" + m.group("uri")
     return s
 
 def iter_files(files):
