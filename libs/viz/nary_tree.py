@@ -67,7 +67,8 @@ def get_coords(tree, step_x: float = 1., step_y: float = -0.2, max_depth: Union[
 
 
 def plot_tree(coords: CoordDict, edges: EdgeList, labels=None, filename: Union[None, str] = None,
-              edge_params: PlotParams = None, node_params: PlotParams = None, label_params: PlotParams = None) -> None:
+              edge_params: PlotParams = None, node_params: PlotParams = None, label_params: PlotParams = None,
+              figure_params: PlotParams = None) -> None:
     """
     Plot a tree from a list of coordinates and edges.
 
@@ -86,7 +87,9 @@ def plot_tree(coords: CoordDict, edges: EdgeList, labels=None, filename: Union[N
         node_params = dict(c="k", alpha=0.2)
     if label_params is None:
         label_params = dict()
-
+    if figure_params is None:
+        figure_params = dict()
+    plt.figure(**figure_params)
     plt.scatter(*zip(*coords.values()), **node_params)
     for edge in edges:
         plt.plot(*edge, **edge_params)
