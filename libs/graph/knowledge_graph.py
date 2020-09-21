@@ -81,7 +81,6 @@ class KnowledgeGraph:
         h = self.ent.to_id(h, insert_if_absent=True)
         t = self.ent.to_id(t, insert_if_absent=True)
         r = self.rel.to_id(r, insert_if_absent=True)
-        
         self.add(h, r, t)
         
     def __len__(self):
@@ -357,14 +356,17 @@ class KnowledgeGraph:
                 
     def sample_instances(self, n, from_type="owl:Thing", except_type=None, type_rel="rdf:type", as_string=False, force_size=True, exclude_ids=None):
         is_a = self.rel.to_id(type_rel)
-        t = self.ent.to_id(from_type)
+        try:
+            t = self.ent.to_id(from_type)
+        except KeyError:
+            raise KeyError(f"Sampling impossible for class '{t}' (no instances found).")
         instances = {h for h, _, _ in self.find_triples(r=is_a, t=t, as_string=as_string)}
         if except_type is not None:
             #t_exc = self.ent.to_id(except_type)
             r, t_excluded = (type_rel, except_type) if as_string else (is_a, self.ent.to_id(except_type))
             instances = {h for h in instances if (h, r, t_excluded) not in self}
         if exclude_ids is not None:
-            instances -= exclude_ids
+            instances -= set(exclude_ids)
         if len(instances) < n:
             if force_size: 
                 raise ValueError(f"Can't sample {n} items from a set of size {len(instances)} for type '{from_type}'.")
