@@ -59,3 +59,14 @@ def create_from_instances(graph: KnowledgeGraph, instances: Iterable[int], is_va
     cls2name = {c: n for n, c in name2cls.items()}
     # print(len(indices), len(name2cls))
     return Dataset(indices, labels, name2cls, cls2name, axioms=set())
+
+def create_from_typed_instances(instances: Iterable[int], types: Iterable[str]) -> "Dataset":
+    cls2name = dict(enumerate(set(types)))
+    name2cls = {n: c for c, n in cls2name.items()}
+    instances = list(instances)
+    labels = [name2cls[name] for name in types]
+    if len(instances) != len(labels):
+        raise ValueError(f"Size mismatch: found {len(instances)} instances and {len(labels)} labels. 'instances' and"
+                         " 'types' must have the same length")
+    return Dataset(instances, labels, name2cls, cls2name, axioms=set())
+
