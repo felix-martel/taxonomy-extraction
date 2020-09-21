@@ -46,7 +46,7 @@ def get_identifier(s, shorten=False):
 
 def iter_files(files):
     for file in files:
-        with open(file, "r") as f:
+        with open(file, "r", encoding="utf8") as f:
             for line in f:
                 h, r, t = split_line(line)
                 yield h, r, t, file
