@@ -1,4 +1,6 @@
 import os
+import json
+
 import itertools as it
 import numpy as np
 from tqdm import tqdm
@@ -64,7 +66,7 @@ def models(name=None):
 def filename(name, which="ent"):
     return os.path.join(DIR, name, file[which])
 
-def load(model=None, dim=None, epochs=None):
+def old_load(model=None, dim=None, epochs=None):
     if isinstance(model, np.ndarray):
         return model
     if model is None:
@@ -75,6 +77,24 @@ def load(model=None, dim=None, epochs=None):
         m = MODELS.get(model, [model])[0]
     name = filename(m)
     return np.load(name)
+
+def load_registry():
+    with open("resources.json", "r") as f:
+        r = json.load(f)
+    return r.get("embeddings", dict())
+
+def load(model=None):
+    if isinstance(model, np.ndarray):
+        return model
+    r = load_registry()
+    if model is None:
+        if "default" in r:
+            model = r["default"]
+        else:
+            raise ValueError("Since no default embeddings model is provided in config file 'resources.json', you must"
+                             " provide a model name or path to function `load`.")
+    model = r.get(model, model)
+    return np.load(model)
 
 def get_empty_ids(model, dim=None, epochs=None, verbose=True):
     E = load(model, dim, epochs)
