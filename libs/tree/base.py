@@ -165,9 +165,9 @@ class Node(Generic[T]):
             edges = cls.read_edge_list(file, preprocess=preprocess)
         return cls.from_edges(edges, add_root=add_root)
 
-    def to_file(self, filename: str):
+    def to_file(self, filename: str, preprocess: Optional[Callable[[T], str]] = None):
         with open(filename, "w", encoding="utf8") as file:
-            self.write_edge_list(self.to_edges(), file)
+            self.write_edge_list(self.to_edges(), file, preprocess=preprocess)
 
     @property
     def is_root(self) -> bool:
