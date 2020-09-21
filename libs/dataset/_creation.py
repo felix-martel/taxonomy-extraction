@@ -10,7 +10,7 @@ def create_from_classes(graph: KnowledgeGraph, classes: List[str], class_size: U
     """Create dataset from a list of classnames"""
     # TODO: add proper axiom creation
     cls2name = {cls: name for cls, name in enumerate(classes)}
-    name2cls = {name: cls for cls, name in enumerate(cls2name)}
+    name2cls = {name: cls for cls, name in cls2name.items()}
 
     if isinstance(class_size, int):
         class_size = [class_size] * len(cls2name)
@@ -21,7 +21,7 @@ def create_from_classes(graph: KnowledgeGraph, classes: List[str], class_size: U
     indices = []
     labels = []
     for size, (t, label) in zip(class_size, name2cls.items()):
-        ids = graph.sample_instances(size, from_type=t, force_size=force_size, **kwargs)
+        ids = graph.sample_instances(size, from_type=t, force_size=force_size, exclude_ids=indices, **kwargs)
         labs = [label] * len(ids)
         indices.extend(ids)
         labels.extend(labs)
