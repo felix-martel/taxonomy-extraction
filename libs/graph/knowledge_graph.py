@@ -250,13 +250,13 @@ class KnowledgeGraph:
         dirname = self.dirname if dirname is None else dirname
         register(name, dirname)
     
-    def print_relations(self, name=None, idx=None):
+    def print_relations(self, name=None, idx=None, inverse=True):
         if name is not None:
             idx = self.ent.to_id(name)
         elif idx is not None:
             name = self.ent.to_name(idx)
         else:
-            raise ValueError("You must provide a name of a uri")
+            raise ValueError("You must provide a name or an identifier")
         print(name)
         for r, ts in self._h[idx].items():
             r = self.rel.to_name(r)
@@ -269,6 +269,18 @@ class KnowledgeGraph:
                 t = next(iter(ts))
                 t = self.ent.to_name(t)
                 print("\t", r, t)
+        if inverse:
+            for r, ts in self._t[idx].items():
+                r = f"is {self.rel.to_name(r)} of"
+                if len(ts) > 1:
+                    print("\t", r)
+                    for t in ts:
+                        t = self.ent.to_name(t)
+                        print("\t\t", t)
+                else:
+                    t = next(iter(ts))
+                    t = self.ent.to_name(t)
+                    print("\t", r, t)
 
     def is_uri(self, e):
         return isinstance(e, str)
