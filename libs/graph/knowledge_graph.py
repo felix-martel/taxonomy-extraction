@@ -44,8 +44,8 @@ class KnowledgeGraph:
         self._r = DoubleDict()
         self._t = DoubleDict()
         
-        self.ent = entities if entities is not None else IdMapper
-        self.rel = relations if relations is not None else IdMapper
+        self.ent = entities if entities is not None else IdMapper()
+        self.rel = relations if relations is not None else IdMapper()
         
         self.n_triples = 0
         self.dirname = dirname
