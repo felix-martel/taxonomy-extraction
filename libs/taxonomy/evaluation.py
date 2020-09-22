@@ -28,7 +28,7 @@ closure  \tno    \t\tyes
 precision\t{:.2f}%\t\t{:.2f}%
 recall   \t{:.2f}%\t\t{:.2f}%
 f1       \t{:.2f}%\t\t{:.2f}%
-""".format(*[100 * x for x in (p1, p2, r1, r2, c1, c2)]))
+""".format(*[100 * x for x in (p1, p2, r1, r2, c1, c2)]).replace(".", sep))
     return (p1, r1, c1), (p2, r2, c2)
 
 
