@@ -123,6 +123,7 @@ class ExpressiveExtractor:
                     os.makedirs(new_path, exist_ok=True)
                 else:
                     raise (e)
+            params.save(os.path.join(params.record.directory, "params.json"))
         return params
 
     def setup_loggers(self, level=logging.INFO):
