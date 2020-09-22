@@ -7,9 +7,9 @@ from ..embeddings import load as load_embeddings
 from ..cluster import clusterize
 
 methods = {
-    "global": extract_global,
-    "local": extract_local,
-    "proba": extract_proba
+    "hard": extract_global,
+    # "local": extract_local,
+    "soft": extract_proba
 }
 
 def extract_axioms(F, method, *args, **kwargs):
@@ -33,17 +33,22 @@ class TaxonomyExtractor(object):
         )
 
         self.clu = None
+        self.F = None
         self.predicted = None
 
     @property
     def score_matrix(self):
         if self.clu is None:
             return None
-        return self.clu.F()
+        self.F = self.clu.F()
+        return self.F
 
     def run(self):
         self.clu = clusterize(self.data, self.embeddings, **self.params["clustering"])
-        F = self.score_matrix()
-        self.predicted = extract_axioms(F, self.params["method"], **self.params["mapping"])
+        self.predicted = extract_axioms(F=self.score_matrix,
+                                        method=self.params["method"],
+                                        root=self.clu,
+                                        **self.params["mapping"]
+                                        )
 
         return self.predicted
