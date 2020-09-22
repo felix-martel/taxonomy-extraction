@@ -63,9 +63,12 @@ class GraphSampler(object):
             c = atom
         else:
             raise NotImplementedError(f"Function 'instances_from_atom' is not defined for {atom}")
+        cname = c.concept
+        if c.is_singleton:
+            cname = cname[1:-1]
         isa = self.graph.rel.to_id("rdf:type")
         rid = self.graph.rel.to_id(r)
-        cid = self.graph.ent.to_id(c.concept) if c is not TopAxiom else None
+        cid = self.graph.ent.to_id(cname) if c is not TopAxiom else None
         if c.is_singleton or c is TopAxiom:
             instances = {h for h, _, _ in self.graph.find_triples(r=rid, t=cid)}
         else:
