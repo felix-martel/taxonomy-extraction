@@ -72,6 +72,9 @@ class ExpressiveExtractor:
         self.n_clustering_steps = 0
         self.max_depth = 0
 
+        if auto_init:
+            self.init()
+
     @property
     def done(self):
         """
