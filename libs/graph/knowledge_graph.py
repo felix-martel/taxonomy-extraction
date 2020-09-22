@@ -264,7 +264,7 @@ class KnowledgeGraph:
                 for t in ts:
                     t = self.ent.to_name(t)
                     print("\t\t", t)
-            else:
+            elif len(ts) == 1:
                 t = next(iter(ts))
                 t = self.ent.to_name(t)
                 print("\t", r, t)
@@ -276,7 +276,7 @@ class KnowledgeGraph:
                     for t in ts:
                         t = self.ent.to_name(t)
                         print("\t\t", t)
-                else:
+                elif len(ts) == 1:
                     t = next(iter(ts))
                     t = self.ent.to_name(t)
                     print("\t", r, t)
