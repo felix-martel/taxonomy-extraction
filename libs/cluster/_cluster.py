@@ -12,7 +12,7 @@ from libs.dataset import Dataset
 from libs.tree import Node
 from libs.utils.timer import Timer
 from libs.utils.format import format_counter
-
+from libs.metrics import f_score
 
 def run_clustering(data: Dataset, embeddings: np.ndarray, use_full_matrix: bool = False, verbose: bool = False,
                    **params) -> AgglomerativeClustering:
@@ -148,3 +148,6 @@ class Cluster(Node):
                 X[i, j] = func(node, cls, *args, **kwargs)
 
         return pd.DataFrame(X, columns=classes, index=range(n_clusters))
+
+    def F(self):
+        return self.get_func_matrix(f_score, class_counts=self.data.class_count)
