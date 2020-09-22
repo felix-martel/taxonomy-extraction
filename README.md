@@ -52,3 +52,5 @@ methods and algorithms.
 
 This project mostly relies on `numpy`, `scipy`, `scikit-learn`, `OpenKE`. `networkx` and `plotly` are required for plotting interactive trees.
 
+The file `resources.json` can be used to register various resources (datasets, taxonomies, knowledge graphs) under a 
+nickname, in order to load them easily.
