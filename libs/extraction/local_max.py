@@ -1,5 +1,7 @@
 import numpy as np
-import libs.extraction.common as common
+
+from .common import mapping_to_axioms
+
 
 def compute_mapping(F, root=None, allow_root=False, verbose=False, **kwargs):
     if not allow_root:
@@ -30,7 +32,8 @@ def compute_mapping(F, root=None, allow_root=False, verbose=False, **kwargs):
     print("Mapping computed. {} ties out of {} classes".format(n_ties, n_classes))
     return cls_to_clu
 
+
 def extract_axioms(F, root=None, allow_root=False, verbose=False, **kwargs):
     clu = kwargs.pop("clu")
     cls_to_clu = compute_mapping(F, root, allow_root, verbose, **kwargs)
-    return common.mapping_to_axioms(cls_to_clu, clu)
+    return mapping_to_axioms(cls_to_clu, clu)
