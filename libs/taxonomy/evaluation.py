@@ -13,7 +13,9 @@ def evaluate(axioms_true, axioms_pred, verbose=True):
     return prec, rec, f1
 
 
-def evaluate_full(axioms_true, axioms_pred, verbose=True):
+def evaluate_full(axioms_true, axioms_pred, verbose=True, sep="."):
+    axioms_pred = set(axioms_pred)
+    axioms_true = set(axioms_true)
     p1, r1, c1 = evaluate(axioms_true, axioms_pred, False)
     axioms_true = transitive_closure(axioms_true)
     axioms_pred = transitive_closure(axioms_pred)
