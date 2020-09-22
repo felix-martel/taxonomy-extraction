@@ -363,6 +363,7 @@ class ExpressiveExtractor:
             self.next()
             if n_runs is not None:
                 n_runs -= 1
+        return self.T
 
 
 
