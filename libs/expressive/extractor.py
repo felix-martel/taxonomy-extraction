@@ -31,11 +31,14 @@ from ..utils import Timer
 from ..dataset import create_from_instances as create_dataset
 from ..cluster import clusterize, Cluster
 from ..sampling import GraphSampler, Instances, Sampled
+from .params import BASE_PARAMS
 
 
 class ExpressiveExtractor:
-    def __init__(self, graph, params, sampler=None, verbose=logging.INFO):
+    def __init__(self, graph, params=None, sampler=None, verbose=logging.INFO, auto_init=True):
         self.kg = graph
+        if params is None:
+            params = BASE_PARAMS
         self.params = self.init_params(params)
         self.name = self.params.record.taxname
 
@@ -90,7 +93,7 @@ class ExpressiveExtractor:
                 self.params.max_axioms = 1
             self.unprocessed = [RemainderAxiom(ax) for ax in self.extracted_classes - self.done_classes]
 
-        return False
+        return not bool(self.unprocessed)
 
     @property
     def extracted_classes(self):
