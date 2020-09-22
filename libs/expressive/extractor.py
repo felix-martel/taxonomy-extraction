@@ -23,11 +23,11 @@ from collections import Counter
 from typing import List, Set, Iterable, Tuple, Optional
 
 from libs import embeddings
-from libs.axiom_extraction import Inducer as AxiomInducer
-from libs.taxonomy import Taxonomy
+from ..axiom_extraction import Inducer as AxiomInducer
+from ..taxonomy import Taxonomy
 from ..axiom import TopAxiom, RemainderAxiom, Axiom
 from ..tree import Node
-from ..utils import Timer, Params
+from ..utils import Timer
 from ..dataset import create_from_instances as create_dataset
 from ..cluster import clusterize, Cluster
 from ..sampling import GraphSampler, Instances, Sampled
