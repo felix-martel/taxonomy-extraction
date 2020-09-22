@@ -3,14 +3,14 @@ import functools
 from collections import defaultdict
 
 
-def softmax(M, gamma=1, axis=0):
+def softmax(M, beta=1, axis=0):
     """
     Compute the softmax over matrix M (row- or column-wise). Default is column-wise, i.e 
     return a matrix S s.t 
-    S_i,j = exp(gamma * S_i,j) / sum_i' exp(gamma * S_i',j)
+    S_i,j = exp(beta * S_i,j) / sum_i' exp(beta * S_i',j)
     Each column of S has sum 1
     """
-    e = np.exp(gamma*M)
+    e = np.exp(beta * M)
     return e / np.sum(e, axis=axis, keepdims=True)
 
 def oldest_margin_prob(cluster, P):
@@ -70,19 +70,19 @@ def optim_margin_prob(clu, P):
     return p_cache[clu.root]   
                 
                 
-def compute_axiom_probability(F, root, gamma=1, verbose=False):
+def compute_axiom_probability(F, root, beta=1, verbose=False):
     """
     F: F-score matrix to use for computing the type-cluster mapping probability, w/ dim (n_cluster, n_types)
     root: root cluster
-    gamma: softmax parameter, gamma=0: all axioms have the same proba, gamma-->infinity: deterministic case
+    beta: softmax parameter, beta=0: all axioms have the same proba, beta-->infinity: deterministic case
     threshold: probability threshold for considering that an axiom is valid
     
     # maybe we can deduce `root` from F (e.g F[-1] ?)
     """
-    P = softmax(F.values, gamma=gamma)
+    P = softmax(F.values, beta=beta)
     if verbose:
         print(np.max(P))
-    dP, S = margin_prob(root, P)
+    dP = optim_margin_prob(root, P)
     # np.fill_diagonal(dP, 0.) # Remove a⊑a axioms (technically true, but of little interest)
     return dP
 
@@ -209,8 +209,10 @@ def older_build_taxonomy(F, dP, threshold=0.01, verbose=False):
         
     return pruned_axioms
         
-def extract_axioms(F, root, threshold=0.01, gamma=1, verbose=False, compress=True):
-    dP = compute_axiom_probability(F, root, gamma=gamma, verbose=verbose)
+def extract_axioms(F, root=None, threshold=0.1, beta=100, verbose=False, compress=True):
+    if root is None:
+        root = len(F) - 1
+    dP = compute_axiom_probability(F, root, beta=beta, verbose=verbose)
     return build_taxonomy(F, dP, threshold=threshold, verbose=verbose, compress=compress)
     
 
@@ -248,7 +250,7 @@ def evaluate_gamma(gamma, F, clustering):
     Return the max possible F-score one can get with a given gamma value
     DEPRECATED
     """
-    paxioms = compute_axiom_probability(F, clustering.root, gamma=gamma, threshold=0.)
+    paxioms = compute_axiom_probability(F, clustering.root, beta=gamma, threshold=0.)
     records = find_best_threshold(paxioms, true_axioms)
     
     t, p, r, f, n = max(records, key=lambda x:x[3])
