@@ -54,3 +54,9 @@ This project mostly relies on `numpy`, `scipy`, `scikit-learn`, `OpenKE`. `netwo
 
 The file `resources.json` can be used to register various resources (datasets, taxonomies, knowledge graphs) under a 
 nickname, in order to load them easily.
+
+## Papers
+
+- [What is the schema of your knowledge graph?](https://dl.acm.org/doi/10.1145/3391274.3393637), A. Zouaq and F. Martel, Proceedings of The International Workshop on Semantic Big Data, June 2020
+- [Taxonomy extraction using knowledge graph embeddings and hierarchical clustering](https://dl.acm.org/doi/10.1145/3412841.3441959), F. Martel and A. Zouaq, Proceedings of the 36th Annual ACM Symposium on Applied Computing, March 2021
+- (in French) [Extraction de taxonomie par plongement hiérarchique de plongements vectoriels de graphes de connaissance](https://publications.polymtl.ca/5361/), F. Martel, masters thesis, Polytechnique Montréal, October 2021
